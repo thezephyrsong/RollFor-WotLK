@@ -3,6 +3,22 @@ local M = RollFor
 
 M.wotlk = true
 
+-- WotLK Polyfill for modern GetLootSlotType
+if not _G.GetLootSlotType then
+    _G.LOOT_SLOT_ITEM = 1
+    _G.LOOT_SLOT_MONEY = 2
+    _G.LOOT_SLOT_CURRENCY = 3
+
+    _G.GetLootSlotType = function(slot)
+        if LootSlotIsCoin and LootSlotIsCoin(slot) then
+            return _G.LOOT_SLOT_MONEY
+        elseif LootSlotIsItem and LootSlotIsItem(slot) then
+            return _G.LOOT_SLOT_ITEM
+        end
+        return 0 -- Unknown / Empty
+    end
+end
+
 -- WotLK uses Lua 5.1, so # operator works and math.mod is gone.
 ---@param t table
 ---@return number
