@@ -502,28 +502,39 @@ function M.encode_base64( data )
 end
 
 function M.get_addon_version()
-    -- Attempt to get the version using the standard WotLK folder names
-    local version = GetAddOnMetadata("RollFor", "Version") 
-                 or GetAddOnMetadata("RollFor-WotLK", "Version") 
-                 or GetAddOnMetadata("RollFor_WotLK", "Version")
+    -- Attempt to get the version safely
+    local version_str = GetAddOnMetadata("RollFor", "Version") 
+                     or GetAddOnMetadata("RollFor-WotLK", "Version") 
+                     or GetAddOnMetadata("RollFor_WotLK", "Version")
     
-    -- HARD FALLBACK: If WoW still returns nil because of a weird folder name, force a default version
-    if not version then
-        version = "4.8.2"
+    -- Hard fallback so it never returns nil
+    if not version_str then
+        version_str = "4.8.2"
     end
     
-    -- Now string.match is guaranteed to receive a string, preventing the fatal crash
-    local major, minor, patch = string.match(version, "(%d+)%.(%d+)%.(%d+)")
+    local major, minor, patch = string.match(version_str, "(%d+)%.(%d+)%.(%d+)")
     
+    local v = {}
     if not major then
-        return { major = 0, minor = 0, patch = 0 }
+        v = { major = 0, minor = 0, patch = 0, str = version_str, string = version_str }
+    else
+        v = {
+            major = tonumber(major),
+            minor = tonumber(minor),
+            patch = tonumber(patch),
+            str = version_str,
+            string = version_str
+        }
     end
     
-    return {
-        major = tonumber(major),
-        minor = tonumber(minor),
-        patch = tonumber(patch)
-    }
+    -- Tell Lua how to safely print this table if string.format requests it
+    setmetatable(v, {
+        __tostring = function(self)
+            return self.str
+        end
+    })
+    
+    return v
 end
 
 function M.clear_table( t )
