@@ -64,17 +64,17 @@ function M.new( player_info, sr_db, group_roster )
   local function on_chat_msg_whisper( message, sender )
     if not am_i_the_leader() then return end
 
-    -- Only respond to messages starting with ?SR
-    if not string.find( message, "^%?SR" ) then return end
+    -- Only respond to messages starting with !SR
+    if not string.find( message, "^%!SR" ) then return end
 
-    -- ?SR ? — status query
-    if string.find( message, "^%?SR %?" ) then
+    -- !SR ? — status query
+    if string.find( message, "^%!SR %?" ) then
       whisper( sender, format_sr_list( sender ) )
       return
     end
 
-    -- ?SR cancel [item link]
-    if string.find( message, "^%?SR cancel" ) then
+    -- !SR cancel [item link]
+    if string.find( message, "^%!SR cancel" ) then
       local item_id = extract_item_id( message )
       if not item_id then
         whisper( sender, "Please link a valid item to cancel." )
@@ -90,7 +90,7 @@ function M.new( player_info, sr_db, group_roster )
       return
     end
 
-    -- ?SR swap [item link] [item link]
+    -- !SR swap [item link] [item link]
     if string.find( message, "^%?SR swap" ) then
       local old_id, new_id = extract_two_item_ids( message )
       if not old_id or not new_id then
@@ -123,7 +123,7 @@ function M.new( player_info, sr_db, group_roster )
       return
     end
 
-    -- ?SR [item link] — add a new SR
+    -- !SR [item link] — add a new SR
     local item_id   = extract_item_id( message )
     local item_link = item_link_from_message( message )
 

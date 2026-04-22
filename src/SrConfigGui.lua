@@ -92,6 +92,35 @@ local function make_editbox( parent, width, height )
   return wrapper
 end
 
+local function setup_placeholder(eb, placeholder_text)
+  -- We need to find the actual WoW object to change the color
+  local raw_eb = eb._inner or eb -- Fallback to eb if _inner doesn't exist
+
+  local function show_placeholder()
+    if eb:GetText() == "" then
+      eb:SetText(placeholder_text)
+      if raw_eb.SetTextColor then
+        raw_eb:SetTextColor(0.5, 0.5, 0.5) -- Grey
+      end
+    end
+  end
+
+  eb:SetScript("OnEditFocusGained", function(self)
+    if self:GetText() == placeholder_text then
+      self:SetText("")
+      if raw_eb.SetTextColor then
+        raw_eb:SetTextColor(1, 1, 1) -- White
+      end
+    end
+  end)
+
+  eb:SetScript("OnEditFocusLost", function(self)
+    show_placeholder()
+  end)
+
+  show_placeholder()
+end
+
 -- ── Row pool for the SR list ───────────────────────────────────────────────
 
 local function create_sr_row( parent )
@@ -199,16 +228,50 @@ local function create_frame( sr_db, on_apply, on_whisper_player )
     refresh_lock_display()
   end )
 
+  -- ── Close button ──
+  local close_btn = make_button( frame, "Close", 70, 22 )
+  close_btn:SetPoint( "BOTTOMRIGHT", frame, "BOTTOMRIGHT", -16, 10 )
+  close_btn:SetScript( "OnClick", function() frame:Hide() end )
+
   -- ── Max SRs spinner ──
-  make_label( frame, "Max SRs per player:", "GameFontNormalSmall", nil ):SetPoint( "TOPLEFT", lock_btn, "BOTTOMLEFT", 0, -10 )
+  local max_sr_label = make_label( frame, "Max SRs per player:", "GameFontNormalSmall", nil )
+  max_sr_label:SetPoint( "TOP", frame, "TOP", -40, -35 )
 
   local max_label = make_label( frame, "", "GameFontNormal", nil )
-  max_label:SetPoint( "TOPLEFT", lock_btn, "BOTTOMLEFT", 142, -8 )
+  max_label:SetPoint( "LEFT", max_sr_label, "RIGHT", 8, 0 )
   max_label:SetTextColor( 1, 1, 0 )
 
   local function refresh_max_display()
     max_label:SetText( tostring( sr_db.get_max_srs() ) )
   end
+
+  local function announce_sr_info()
+    local channel = "SAY"
+    if api.GetNumRaidMembers() > 0 then
+      channel = "RAID"
+    elseif api.GetNumPartyMembers() > 0 then
+      channel = "PARTY"
+    end
+
+    local msg = "SoftRes is active! Whisper me your reservations like this: !SR [Item Link]"
+    
+    if api.IsRaidLeader() or api.IsRaidOfficer() or api.GetNumRaidMembers() == 0 then
+      api.SendChatMessage(msg, channel)
+    else
+      m.pretty_print("You must be the Raid Leader or Assistant to announce.", m.colors.red)
+    end
+  end
+
+  local announce_btn = make_button( frame, "Announce Info", 110, 22 )
+  announce_btn:SetPoint( "TOPRIGHT", frame, "TOPRIGHT", -16, -30 ) 
+  announce_btn:SetScript( "OnClick", announce_sr_info )
+  announce_btn:SetScript("OnEnter", function(self)
+   api.GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+   api.GameTooltip:SetText("Announce Instructions", 1, 1, 1)
+   api.GameTooltip:AddLine("Broadcasts SR instructions to Raid/Party.", 0.5, 0.5, 0.5)
+   api.GameTooltip:Show()
+  end)
+  announce_btn:SetScript("OnLeave", function() api.GameTooltip:Hide() end)
 
   local dec_btn = make_button( frame, "-", 22, 20 )
   dec_btn:SetPoint( "LEFT", max_label, "RIGHT", 6, 0 )
@@ -232,8 +295,43 @@ local function create_frame( sr_db, on_apply, on_whisper_player )
     end
   end )
 
+  local clear_confirm = false
+
+  local clear_all_btn = make_button( frame, "Clear All", 80, 22 )
+  clear_all_btn:SetPoint( "RIGHT", close_btn, "LEFT", -6, 0 )
+  
+  clear_all_btn:SetScript( "OnClick", function(self)
+    if not clear_confirm then
+      clear_confirm = true
+      self:SetText("|cffff0000Confirm?|r")
+      -- Reset the button if they don't click again within 3 seconds
+      api.after(3, function() 
+        clear_confirm = false
+        self:SetText("Clear All")
+      end)
+    else
+      -- The actual clearing logic
+      sr_db.clear_all_srs()
+      clear_confirm = false
+      self:SetText("Clear All")
+      m.pretty_print("All Soft Reserves have been cleared.", m.colors.green)
+      on_apply() -- Notifies other modules
+      refresh()  -- Updates the current GUI list
+    end
+  end )
+
+  -- Add a helpful tooltip
+  clear_all_btn:SetScript("OnEnter", function(self)
+    api.GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+    api.GameTooltip:SetText("Clear All SRs", 1, 0, 0)
+    api.GameTooltip:AddLine("Permanently deletes all player reservations.", 1, 1, 1)
+    api.GameTooltip:AddLine("Requires two clicks to confirm.", 0.5, 0.5, 0.5)
+    api.GameTooltip:Show()
+  end)
+  clear_all_btn:SetScript("OnLeave", function() api.GameTooltip:Hide() end)
+
   -- ── Column headers ──
-  local headers_y = -HEADER_H + 6
+  local headers_y = -HEADER_H + 12
   local ph = make_label( frame, "Player", "GameFontNormalSmall", "TOPLEFT", 16, headers_y )
   ph:SetTextColor( 0.7, 0.7, 0.7 )
   local ih = make_label( frame, "Item", "GameFontNormalSmall", "TOPLEFT", 132, headers_y )
@@ -256,11 +354,13 @@ local function create_frame( sr_db, on_apply, on_whisper_player )
   local add_player_eb = make_editbox( frame, 110, 20 )
   add_player_eb:SetPoint( "LEFT", add_sep, "RIGHT", 6, 0 )
   add_player_eb:SetScript( "OnTabPressed", function() add_player_eb:ClearFocus() end )
+  setup_placeholder(add_player_eb, "Character Name")
 
   local add_item_eb = make_editbox( frame, 200, 20 )
   add_item_eb:SetPoint( "LEFT", add_player_eb, "RIGHT", 6, 0 )
   add_item_eb:SetScript( "OnTabPressed", function() add_item_eb:ClearFocus() end )
   table.insert( item_editboxes, add_item_eb )
+  setup_placeholder(add_item_eb, "Shift-Click Item Here")
 
   -- Intercept item link drops into the add-item editbox
   add_item_eb:SetScript( "OnReceiveDrag", function()
@@ -292,11 +392,6 @@ local function create_frame( sr_db, on_apply, on_whisper_player )
 
   local add_hr_btn = make_button( frame, "Add HR", 60, 20 )
   add_hr_btn:SetPoint( "LEFT", add_hr_eb, "RIGHT", 6, 0 )
-
-  -- ── Close button ──
-  local close_btn = make_button( frame, "Close", 70, 22 )
-  close_btn:SetPoint( "BOTTOMRIGHT", frame, "BOTTOMRIGHT", -16, 10 )
-  close_btn:SetScript( "OnClick", function() frame:Hide() end )
 
   -- ── Row rendering ─────────────────────────────────────────────────────────
 
@@ -388,13 +483,20 @@ local function create_frame( sr_db, on_apply, on_whisper_player )
     scroll_frame:UpdateScrollChildRect()
   end
 
-  -- ── Add SR button handler ──
+-- ── Add SR button handler ──
   add_sr_btn:SetScript( "OnClick", function()
     local player_name = add_player_eb:GetText()
     local link_text   = add_item_eb:GetText()
 
-    if not player_name or player_name == "" then
+    -- Check for empty OR placeholder text
+    if not player_name or player_name == "" or player_name == "Character Name" then
       m.pretty_print( "Enter a player name.", m.colors.red )
+      return
+    end
+
+    -- Check for empty OR placeholder text for item
+    if not link_text or link_text == "" or link_text == "Shift-Click Item Here" then
+      m.pretty_print( "Please link a valid item.", m.colors.red )
       return
     end
 
@@ -413,15 +515,26 @@ local function create_frame( sr_db, on_apply, on_whisper_player )
     on_whisper_player( player_name,
       string.format( "[%s] has been added to your SRs by the raid leader.", item_name or ("item:" .. item_id) ) )
 
+    -- Clear text and remove focus so placeholders show back up
     add_player_eb:SetText( "" )
     add_item_eb:SetText( "" )
+    add_player_eb:ClearFocus()
+    add_item_eb:ClearFocus()
+    
     refresh()
   end )
 
   -- ── Add HR button handler ──
   add_hr_btn:SetScript( "OnClick", function()
     local link_text = add_hr_eb:GetText()
-    local item_id   = string.match( link_text, "|Hitem:(%d+):" )
+    
+    -- Check for placeholder (assuming you add a placeholder to the HR box too)
+    if not link_text or link_text == "" or link_text == "Shift-Click Item Here" then
+      m.pretty_print( "Please link a valid item for HR.", m.colors.red )
+      return
+    end
+
+    local item_id = string.match( link_text, "|Hitem:(%d+):" )
     item_id = item_id and tonumber( item_id )
 
     if not item_id then
@@ -441,6 +554,7 @@ local function create_frame( sr_db, on_apply, on_whisper_player )
     end
 
     add_hr_eb:SetText( "" )
+    add_hr_eb:ClearFocus() -- Resets placeholder
     refresh()
   end )
 
@@ -491,6 +605,10 @@ function M.new( sr_db, on_apply, on_whisper_player )
       frame.refresh()
     end
   end
+
+  -- ADD THIS LINE:
+  -- This attaches the show function to the module so m.SrConfigGui.show() works.
+  M.show = show
 
   return {
     show    = show,

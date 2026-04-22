@@ -51,22 +51,37 @@ function M.new( api, db, manage_softres_fn, winners_popup_fn, options_popup_fn, 
     end
   end
 
-  local function create()
+ local function create()
     local frame = api().CreateFrame( "Button", "RollForMinimapButton", api().Minimap )
     local was_dragging = false
 
-    function frame.OnClick( self )
-      if m.vanilla then self = this end
+    -- In 3.3.5a/Vanilla, we should register for both clicks
+    frame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 
-      if m.is_shift_key_down() then
-        winners_popup_fn()
-      elseif m.is_ctrl_key_down() then
-        options_popup_fn()
-      else
-        manage_softres_fn()
-      end
-      self:OnEnter()
-      api().GameTooltip:Hide()
+    function frame.OnClick( self, button )
+        -- Compatibility fix for older WoW versions where 'this' is used
+        if m.vanilla then 
+            self = this 
+            button = arg1
+        end
+
+        -- Handle Right Click to open the SR Config GUI
+        if button == "RightButton" then
+            m.SrConfigGui.show()
+        else
+            -- Existing Left Click logic (with modifiers)
+            if m.is_shift_key_down() then
+                winners_popup_fn()
+            elseif m.is_ctrl_key_down() then
+                options_popup_fn()
+            else
+                manage_softres_fn()
+            end
+        end
+
+        -- Refresh tooltip state
+        if self.OnEnter then self:OnEnter() end
+        api().GameTooltip:Hide()
     end
 
     function frame.OnMouseDown( self )
@@ -110,9 +125,10 @@ function M.new( api, db, manage_softres_fn, winners_popup_fn, options_popup_fn, 
         api().GameTooltip:AddLine( string.format( "%s - %s", hl( "/rf config" ), white( "show configuration" ) ) )
         api().GameTooltip:AddLine( string.format( "%s - %s", hl( "/rf config help" ), white( "show configuration help" ) ) )
         api().GameTooltip:AddLine( " " )
-        api().GameTooltip:AddLine( "Click to manage softres." )
-        api().GameTooltip:AddLine( "Ctlr+Click for settings." )
-        api().GameTooltip:AddLine( "Shift+Click for winner overview." )
+        api().GameTooltip:AddLine( "|cff00ff00Left-Click|r to import softres." )
+        api().GameTooltip:AddLine( "|cff00ff00Right-Click|r for SR / HR In Game." )
+        api().GameTooltip:AddLine( "|cff00ff00Ctlr+Click|r for settings." )
+        api().GameTooltip:AddLine( "|cff00ff00Shift+Click|r for winner overview." )
 
         if icon_color == ColorType.Green then
           api().GameTooltip:AddLine( " " )
