@@ -304,8 +304,9 @@ local function create_frame( sr_db, on_apply, on_whisper_player )
     if not clear_confirm then
       clear_confirm = true
       self:SetText("|cffff0000Confirm?|r")
-      -- Reset the button if they don't click again within 3 seconds
-      api.after(3, function() 
+      
+      -- Use the standard WoW Timer API
+      C_Timer.After(3, function() 
         clear_confirm = false
         self:SetText("Clear All")
       end)
@@ -315,9 +316,13 @@ local function create_frame( sr_db, on_apply, on_whisper_player )
       clear_confirm = false
       self:SetText("Clear All")
       m.pretty_print("All Soft Reserves have been cleared.", m.colors.green)
-      on_apply() -- Notifies other modules
-      refresh()  -- Updates the current GUI list
+      on_apply()
+      if refresh then 
+        refresh() 
+      elseif frame.refresh then
+        frame.refresh()
     end
+   end
   end )
 
   -- Add a helpful tooltip
