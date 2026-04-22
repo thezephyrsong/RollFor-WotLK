@@ -432,6 +432,26 @@ local function create_components()
   )
 
   M.sandbox = m.Sandbox.new()
+
+  -- ── Whisper SR system ──────────────────────────────────────────────────
+  -- SrDb holds SR/HR state and persists to RollForDb.whisper_sr
+  -- Initialise the subtable if it doesn't exist so SrDb can write into it
+  M.db.whisper_sr = M.db.whisper_sr or {}
+  M.sr_db = m.SrDb.new( M.db.whisper_sr )
+
+  local function apply_whisper_srs()
+    -- Push current whisper SR/HR state into the live softres pipeline
+    local data = M.sr_db.to_softres_data()
+    M.import_softres_data( data )
+    if M.sr_config_gui then M.sr_config_gui.refresh() end
+  end
+
+  local function whisper_player( player_name, text )
+    M.api().SendChatMessage( text, "WHISPER", nil, player_name )
+  end
+
+  M.sr_listener = m.SrListener.new( M.player_info, M.sr_db, M.group_roster )
+  M.sr_config_gui = m.SrConfigGui.new( M.sr_db, apply_whisper_srs, whisper_player )
 end
 
 local function subscribe_for_component_events()
@@ -844,6 +864,9 @@ local function setup_slash_commands()
   SLASH_PL1 = "/pl"
   M.api().SlashCmdList[ "PL"] = plus_ones_command
 
+  SLASH_SRCONFIG1 = "/srconfig"
+  M.api().SlashCmdList[ "SRCONFIG" ] = function() M.sr_config_gui.show() end
+
   --SLASH_DROPPED1 = "/DROPPED"
   --M.api().SlashCmdList[ "DROPPED" ] = simulate_loot_dropped
 end
@@ -868,6 +891,16 @@ end
   M.version_broadcast.broadcast()
   M.import_encoded_softres_data( M.softres_db.data )
   M.softres_gui.load( M.softres_db.data )
+
+  -- Re-hydrate whisper SRs from SavedVariables (only if no softres.it import is active)
+  if not M.softres_db.data and M.sr_db then
+    local data = M.sr_db.to_softres_data()
+    local has_srs = next( data.softreserves ) ~= nil
+    local has_hrs = next( data.hardreserves ) ~= nil
+    if has_srs or has_hrs then
+      M.import_softres_data( data )
+    end
+  end
 
   if M.welcome_popup.should_show() then
     M.welcome_popup.show()

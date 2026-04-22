@@ -95,6 +95,9 @@ src\LootController.lua
 src\TooltipReader.lua
 src\UiReloadPopup.lua
 src\Sandbox.lua
+src\SrDb.lua
+src\SrListener.lua
+src\SrConfigGui.lua
 src\ModernLootFrameSkin.lua
 src\OgLootFrameSkin.lua
 src\Client.lua
