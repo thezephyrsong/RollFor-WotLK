@@ -51,13 +51,45 @@ local function make_button( parent, label_text, width, height )
   return btn
 end
 
+-- Track all our item editboxes so we can hook shift-click into them
+local item_editboxes = {}
+
 local function make_editbox( parent, width, height )
-  local eb = m.api.CreateFrame( "EditBox", nil, parent, "InputBoxTemplate" )
-  eb:SetWidth( width or 120 )
-  eb:SetHeight( height or 20 )
+  -- Wrap in a backdrop frame to match the WoW panel aesthetic in 3.3.5a
+  local wrapper = m.create_backdrop_frame( m.api, "Frame", nil, parent )
+  wrapper:SetWidth( width or 120 )
+  wrapper:SetHeight( height or 20 )
+  wrapper:SetBackdrop( {
+    bgFile   = "Interface\\Tooltips\\UI-Tooltip-Background",
+    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+    tile     = true,
+    tileSize = 16,
+    edgeSize = 12,
+    insets   = { left = 2, right = 2, top = 2, bottom = 2 }
+  } )
+  wrapper:SetBackdropColor( 0.05, 0.05, 0.05, 0.9 )
+  wrapper:SetBackdropBorderColor( 0.4, 0.4, 0.4, 1 )
+
+  local eb = m.api.CreateFrame( "EditBox", nil, wrapper )
+  eb:SetPoint( "TOPLEFT",     wrapper, "TOPLEFT",     4,  -3 )
+  eb:SetPoint( "BOTTOMRIGHT", wrapper, "BOTTOMRIGHT", -4,  3 )
   eb:SetAutoFocus( false )
+  eb:SetFontObject( "GameFontNormalSmall" )
+  eb:SetTextColor( 1, 1, 1 )
   eb:SetScript( "OnEscapePressed", function() eb:ClearFocus() end )
-  return eb
+
+  -- Forward GetText/SetText/GetText/ClearFocus/SetFocus to inner editbox
+  -- so callers can treat the wrapper like a plain editbox
+  wrapper.GetText     = function() return eb:GetText() end
+  wrapper.SetText     = function( _, t ) eb:SetText( t ) end
+  wrapper.ClearFocus  = function() eb:ClearFocus() end
+  wrapper.SetFocus    = function() eb:SetFocus() end
+  wrapper.HasFocus    = function() return eb:HasFocus() end
+  wrapper.Insert      = function( _, t ) eb:Insert( t ) end
+  wrapper.SetScript   = function( _, event, fn ) eb:SetScript( event, fn ) end
+  wrapper._inner      = eb
+
+  return wrapper
 end
 
 -- ── Row pool for the SR list ───────────────────────────────────────────────
@@ -228,6 +260,7 @@ local function create_frame( sr_db, on_apply, on_whisper_player )
   local add_item_eb = make_editbox( frame, 200, 20 )
   add_item_eb:SetPoint( "LEFT", add_player_eb, "RIGHT", 6, 0 )
   add_item_eb:SetScript( "OnTabPressed", function() add_item_eb:ClearFocus() end )
+  table.insert( item_editboxes, add_item_eb )
 
   -- Intercept item link drops into the add-item editbox
   add_item_eb:SetScript( "OnReceiveDrag", function()
@@ -247,6 +280,8 @@ local function create_frame( sr_db, on_apply, on_whisper_player )
 
   local add_hr_eb = make_editbox( frame, 200, 20 )
   add_hr_eb:SetPoint( "LEFT", add_hr_sep, "RIGHT", 6, 0 )
+  table.insert( item_editboxes, add_hr_eb )
+
   add_hr_eb:SetScript( "OnReceiveDrag", function()
     local info_type, _, _, link = GetCursorInfo and GetCursorInfo() or nil
     if info_type == "item" and link then
@@ -416,6 +451,21 @@ local function create_frame( sr_db, on_apply, on_whisper_player )
   end )
 
   frame.refresh = refresh
+
+  -- Hook shift-click item linking: when ChatEdit_InsertLink fires and one of our
+  -- item editboxes has focus, insert the link into it instead.
+  -- hooksecurefunc is safe in 3.3.5a and won't taint the original function.
+  if not _G._RollForSrLinkHooked then
+    _G._RollForSrLinkHooked = true
+    hooksecurefunc( "ChatEdit_InsertLink", function( link )
+      for _, eb_wrapper in ipairs( item_editboxes ) do
+        if eb_wrapper.HasFocus and eb_wrapper:HasFocus() then
+          eb_wrapper:SetText( link )
+          return
+        end
+      end
+    end )
+  end
 
   return frame
 end
