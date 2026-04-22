@@ -45,6 +45,9 @@ function M.new( db )
     return string.match( item_link, "|h%[(.-)%]|h" )
   end
 
+  local function sanitize(name)
+    return name and string.lower(name) or nil
+  end
   -- ── Persistence ──────────────────────────────────────────────────────────
 
   local function save()
@@ -86,7 +89,8 @@ function M.new( db )
   local function get_all_srs() return srs end
 
   local function find_sr_index( player_name, item_id )
-    local entries = srs[ player_name ]
+    local name = sanitize(player_name)
+    local entries = srs[ name ]
     if not entries then return nil end
     for i, entry in ipairs( entries ) do
       if entry.item_id == item_id then return i end
@@ -158,9 +162,10 @@ function M.new( db )
 
   -- Leader manually adds an SR on behalf of a player
   local function add_sr_for_player( player_name, item_id, item_link )
-    local entries = srs[ player_name ] or {}
-    srs[ player_name ] = entries
-    if find_sr_index( player_name, item_id ) then return end
+    local name = sanitize(player_name)
+    local entries = srs[ name ] or {}
+    srs[ name ] = entries
+    if find_sr_index( name, item_id ) then return end
     local name = item_name_from_link( item_link )
     table.insert( entries, { item_id = item_id, item_name = name, item_link = item_link } )
     save()
