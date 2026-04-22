@@ -124,6 +124,12 @@ function M.new( db )
     return true, entry.item_name
   end
 
+  local function clear_all_srs()
+    srs = {}
+    hrs = {}
+    save()
+  end
+
   local function swap_sr( player_name, old_id, new_id )
     local idx = find_sr_index( player_name, old_id )
     if not idx then return "not_found", nil, nil end
@@ -226,6 +232,7 @@ function M.new( db )
     set_max_srs              = set_max_srs,
     add_sr                   = add_sr,
     remove_sr                = remove_sr,
+    clear_all_srs            = clear_all_srs,
     swap_sr                  = swap_sr,
     get_player_srs           = get_player_srs,
     get_all_srs              = get_all_srs,
@@ -238,6 +245,7 @@ function M.new( db )
     to_softres_data          = to_softres_data,
     reload                    = load,  -- call after db is repopulated
     save                     = save,
+    
   }
 end
 
