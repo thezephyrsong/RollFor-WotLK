@@ -297,7 +297,7 @@ function M.new( api, db, manage_softres_fn, winners_popup_fn, options_popup_fn, 
   end
 
   local function set_icon( color )
-    frame.icon:SetTexture( string.format( "Interface\\AddOns\\RollFor\\assets\\icon-%s.tga", string.lower( color ) ) )
+    frame.icon:SetTexture( string.format( "Interface\\AddOns\\RollFor-WotLK\\assets\\icon-%s.tga", string.lower( color ) ) )
     icon_color = color
   end
 
