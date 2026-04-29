@@ -519,7 +519,7 @@ function M.dropdown_input( parent, items_data, selected, on_select )
   frame.button:SetPoint( "RIGHT", -1, 0 )
 
   local icon = frame.button:CreateTexture()
-  icon:SetTexture( "Interface\\AddOns\\RollFor\\assets\\arrow-down.tga", "ARTWORK" )
+  icon:SetTexture( "Interface\\AddOns\\RollFor-WotLK\\assets\\arrow-down.tga", "ARTWORK" )
   icon:SetWidth( 6 )
   icon:SetHeight( 6 )
   icon:SetPoint( "CENTER", 0, 0 )
