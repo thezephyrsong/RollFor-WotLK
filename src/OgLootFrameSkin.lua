@@ -64,7 +64,7 @@ function M.new( frame_builder )
   ---@param parent Frame
   local function texture( parent )
     local result = parent:CreateTexture( nil, "BACKGROUND" )
-    result:SetTexture( "Interface\\AddOns\\RollFor\\assets\\og-loot-frame.tga" )
+    result:SetTexture( "Interface\\AddOns\\RollFor-WotLK\\assets\\og-loot-frame.tga" )
     return result
   end
 
