@@ -378,11 +378,11 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
         if frame.area.scroll.content.setup then
           for _, child in ipairs( { frame.area.scroll.content:GetChildren() } ) do
             if child.config and child.input then
-              if child.input:GetFrameType() == "CheckButton" then
+              if child.input:GetObjectType() == "CheckButton" then
                 child.input:SetChecked( config_db[ child.config ] )
-              elseif child.input:GetFrameType() == "EditBox" then
+              elseif child.input:GetObjectType() == "EditBox" then
                 child.input:SetText( config_db[ child.config ] )
-              elseif child.input:GetFrameType() == "Button" and child.input.dropdown then
+              elseif child.input:GetObjectType() == "Button" and child.input.dropdown then
                 child.input.label:SetText( config_db[ child.config ] )
               end
             end
