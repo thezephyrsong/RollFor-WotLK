@@ -160,7 +160,7 @@ instead of `/rf`. "arf" stands for "All Roll For".
 
 ## Soft-Res setup
 
-1. Create a Soft Res list at https://raidres.fly.dev (1.12.1) or https://softres.it (2.5.2).  
+1. Create a Soft Res list at https://softres.io (Coming soon)
 2. Ask raiders to add their items.
 3. When ready, lock the raid and click on **RollFor export** (raidres.fly.dev) or **Gargul Export** (softes.it) button.
 
