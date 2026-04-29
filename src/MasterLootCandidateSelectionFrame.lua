@@ -100,7 +100,7 @@ local function create_button( parent, index, rows )
   icon:SetPoint( "LEFT", text, "RIGHT", 2, 0 )
   icon:SetWidth( 13 )
   icon:SetHeight( 12 )
-  icon:SetTexture( string.format( "Interface\\AddOns\\RollFor\\assets\\star-%s.tga", "gold" ) )
+  icon:SetTexture( string.format( "Interface\\AddOns\\RollFor-WotLK\\assets\\star-%s.tga", "gold" ) )
   icon:Hide()
   frame.icon = icon
 
