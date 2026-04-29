@@ -83,7 +83,7 @@ function M.new( db )
   end
 
   local function get_player_srs( player_name )
-    return srs[ player_name ] or {}
+    return srs[ sanitize( player_name ) ] or {}
   end
 
   local function get_all_srs() return srs end
@@ -99,11 +99,12 @@ function M.new( db )
   end
 
   local function add_sr( player_name, item_id, item_link )
-    local entries = srs[ player_name ] or {}
-    srs[ player_name ] = entries
+    local key     = sanitize( player_name )
+    local entries = srs[ key ] or {}
+    srs[ key ] = entries
 
     -- Duplicate check
-    if find_sr_index( player_name, item_id ) then
+    if find_sr_index( key, item_id ) then
       return "duplicate", nil
     end
 
@@ -112,18 +113,19 @@ function M.new( db )
       return "full", nil
     end
 
-    local name = item_name_from_link( item_link )
-    table.insert( entries, { item_id = item_id, item_name = name, item_link = item_link } )
+    local item_name = item_name_from_link( item_link )
+    table.insert( entries, { item_id = item_id, item_name = item_name, item_link = item_link } )
     save()
-    return "ok", name
+    return "ok", item_name
   end
 
   local function remove_sr( player_name, item_id )
-    local idx = find_sr_index( player_name, item_id )
+    local key = sanitize( player_name )
+    local idx = find_sr_index( key, item_id )
     if not idx then return false, nil end
-    local entry = srs[ player_name ][ idx ]
-    table.remove( srs[ player_name ], idx )
-    if #srs[ player_name ] == 0 then srs[ player_name ] = nil end
+    local entry = srs[ key ][ idx ]
+    table.remove( srs[ key ], idx )
+    if #srs[ key ] == 0 then srs[ key ] = nil end
     save()
     return true, entry.item_name
   end
@@ -135,39 +137,39 @@ function M.new( db )
   end
 
   local function swap_sr( player_name, old_id, new_id )
-    local idx = find_sr_index( player_name, old_id )
+    local key = sanitize( player_name )
+    local idx = find_sr_index( key, old_id )
     if not idx then return "not_found", nil, nil end
-    if find_sr_index( player_name, new_id ) then return "duplicate", nil, nil end
+    if find_sr_index( key, new_id ) then return "duplicate", nil, nil end
 
-    local old_entry = srs[ player_name ][ idx ]
-    local new_name  = nil
+    local old_entry = srs[ key ][ idx ]
 
     -- Try to get the new item name from GetItemInfo
     local info_name = m.api and m.api.GetItemInfo and m.api.GetItemInfo( new_id )
-    new_name = info_name or ("item:" .. new_id)
+    local new_name  = info_name or ("item:" .. new_id)
 
-    srs[ player_name ][ idx ] = {
+    srs[ key ][ idx ] = {
       item_id   = new_id,
       item_name = new_name,
-      item_link = nil,  -- we don't have the full link here; will update on next GetItemInfo
+      item_link = nil,
     }
     save()
     return "ok", old_entry.item_name, new_name
   end
 
   local function remove_all_srs_for_player( player_name )
-    srs[ player_name ] = nil
+    srs[ sanitize( player_name ) ] = nil
     save()
   end
 
   -- Leader manually adds an SR on behalf of a player
   local function add_sr_for_player( player_name, item_id, item_link )
-    local name = sanitize(player_name)
-    local entries = srs[ name ] or {}
-    srs[ name ] = entries
-    if find_sr_index( name, item_id ) then return end
-    local name = item_name_from_link( item_link )
-    table.insert( entries, { item_id = item_id, item_name = name, item_link = item_link } )
+    local key       = sanitize( player_name )
+    local entries   = srs[ key ] or {}
+    srs[ key ] = entries
+    if find_sr_index( key, item_id ) then return end
+    local item_name = item_name_from_link( item_link )
+    table.insert( entries, { item_id = item_id, item_name = item_name, item_link = item_link } )
     save()
   end
 
