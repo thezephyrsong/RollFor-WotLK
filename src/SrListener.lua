@@ -91,10 +91,10 @@ function M.new( player_info, sr_db, group_roster )
     end
 
     -- !SR swap [item link] [item link]
-    if string.find( message, "^%?SR swap" ) then
+    if string.find( message, "^%!SR swap" ) then
       local old_id, new_id = extract_two_item_ids( message )
       if not old_id or not new_id then
-        whisper( sender, "Usage: ?SR swap [current item] [new item]" )
+        whisper( sender, "Usage: !SR swap [current item] [new item]" )
         return
       end
 
