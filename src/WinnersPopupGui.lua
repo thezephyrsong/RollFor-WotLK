@@ -226,7 +226,7 @@ function M.create_scroll_frame( parent, name )
     for i, button in { _G[ name .. "ScrollBarScrollUpButton" ], _G[ name .. "ScrollBarScrollDownButton" ] } do
       for _, tex in { "Normal", "Highlight", "Pushed", "Disabled" } do
         local texture = button[ "Get" .. tex .. "Texture" ]( button )
-        texture:SetTexture( "Interface\\AddOns\\RollFor\\assets\\arrow-" .. (i == 1 and "up" or "down") .. ".tga" )
+        texture:SetTexture( "Interface\\AddOns\\RollFor-WotLK\\assets\\arrow-" .. (i == 1 and "up" or "down") .. ".tga" )
         texture:SetTexCoord( 0, 1, 0, 1 )
         texture:SetVertexColor( .8, .8, .8, .8 )
         texture:SetAlpha( .8 )
