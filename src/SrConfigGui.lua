@@ -305,11 +305,18 @@ local function create_frame( sr_db, on_apply, on_whisper_player )
       clear_confirm = true
       self:SetText("|cffff0000Confirm?|r")
       
-      -- Use the standard WoW Timer API
-      C_Timer.After(3, function() 
-        clear_confirm = false
-        self:SetText("Clear All")
-      end)
+      -- C_Timer doesn't exist in 3.3.5a; use a frame OnUpdate timer instead
+      local elapsed = 0
+      local timer_frame = m.api.CreateFrame( "Frame" )
+      local btn_ref = self  -- capture button reference for closure
+      timer_frame:SetScript( "OnUpdate", function( _, dt )
+        elapsed = elapsed + dt
+        if elapsed >= 3 then
+          clear_confirm = false
+          btn_ref:SetText( "Clear All" )
+          timer_frame:SetScript( "OnUpdate", nil )
+        end
+      end )
     else
       -- The actual clearing logic
       sr_db.clear_all_srs()
