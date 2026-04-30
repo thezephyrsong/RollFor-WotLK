@@ -43,15 +43,15 @@ end
 ---@param group_roster GroupRoster
 ---@param loot_list LootList
 function M.new( api, group_roster, loot_list )
-  local function get( slot )
+    local function get( slot )
     if not group_roster then return get_dummy_candidates() end
 
     local result = {}
     local players = group_roster.get_all_players_in_my_group()
 
     for i = 1, 40 do
-      -- There's probably a better way of separating the APIs. For now I'm leaving it like this.
-      if m.vanilla then
+      -- Group legacy 1-argument APIs together (Vanilla and 3.3.5 WotLK)
+      if m.vanilla or m.wotlk then
         ---@diagnostic disable-next-line: missing-parameter
         local name = api.GetMasterLootCandidate( i )
 
@@ -61,6 +61,7 @@ function M.new( api, group_roster, loot_list )
           end
         end
       else
+        -- Modern clients (BCC, Retail, WotLK Classic) require the slot
         local name = api.GetMasterLootCandidate( slot, i )
 
         for _, p in ipairs( players ) do
@@ -73,6 +74,7 @@ function M.new( api, group_roster, loot_list )
 
     return result
   end
+
 
   local function find( slot, player_name )
     local candidates = get( slot )
@@ -87,18 +89,21 @@ function M.new( api, group_roster, loot_list )
   ---@param rerolling boolean?
   ---@return Winner
   local function transform_to_winner( player, item, roll_type, winning_roll, rerolling )
-    local slot = loot_list.get_slot( item.id )
+    -- Prioritize an explicit slot if you attach one in LootList.lua, otherwise fallback
+    local slot = item.slot or loot_list.get_slot( item.id )
     local candidate = slot and find( slot, player.name )
     return make_winner( player.name, player.class, item, candidate and true or false, roll_type, winning_roll and winning_roll, rerolling )
   end
 
-  local function get_index( slot, player_name )
+    local function get_index( slot, player_name )
     for i = 1, 40 do
-      if m.vanilla then
+      -- Group legacy 1-argument APIs together (Vanilla and 3.3.5 WotLK)
+      if m.vanilla or m.wotlk then
         ---@diagnostic disable-next-line: missing-parameter
         local name = api.GetMasterLootCandidate( i )
         if name == player_name then return i end
       else
+        -- Modern clients (BCC, Retail, WotLK Classic) require the slot
         local name = api.GetMasterLootCandidate( slot, i )
         if name == player_name then return i end
       end
