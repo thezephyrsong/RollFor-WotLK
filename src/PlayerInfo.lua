@@ -19,8 +19,9 @@ function M.new( api )
   end
 
   local function get_class()
-    return api.UnitClass( "player" )
-  end
+  local _, class = api.UnitClass( "player" )
+  return class
+end
 
   local function is_master_looter()
     if not api.IsInGroup() then return false end
