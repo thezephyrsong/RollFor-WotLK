@@ -34,7 +34,7 @@ See the classic-look in action: https://youtu.be/G37j5XXBKxs
 In this example, the addon shows the soft-ressed items in the loot list.  
 The Master Looter raid-rolls the trash item, then rolls non-SR items.  
 Then the SR items are rolled.
-
+<img src="https://raw.githubusercontent.com/thezephyrsong/RollFor-WotLK/refs/heads/main/SoftRes/image.webp" alt="Epoch Drops">
 <img src="https://github.com/sica42/roll-for-vanilla/blob/master/docs/bindings.gif?v=2" alt="overview" style="width:1350px;height:350">
 
 View better quality (fullscreen): https://youtu.be/f5nY-CxreIM
@@ -46,7 +46,7 @@ In this example, the addon automatically detects that the item is soft-reserved 
 It restricts rolling for the item to these players only and resolves any tie automatically.  
 The Master Looter then assigns the item directly to the winner.
 
-<img src="https://github.com/sica42/roll-for-vanilla/blob/master/docs/gui-sr-tie.gif" alt="soft-res rolling" style="width:1024;height:380">
+<img src="https://github.com/sica42/roll-for-vanilla/blob/master/docs/gui-sr-tie.gif" alt"="soft-res rolling" style="width:1024;height:380">
 
 
 ### Two top rolls win
