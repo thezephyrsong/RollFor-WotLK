@@ -1,2 +1,4 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+# Exclude the assets folder from release zips
+SoftRes/ export-ignore
