@@ -45,6 +45,8 @@ function M.handle_events( main )
       main.roll_for_ad.on_chat_msg_raid( arg1, arg2 )
     elseif event == "CHAT_MSG_WHISPER_INFORM" then
       main.roll_for_ad.on_chat_msg_whisper_inform( arg1, arg2 )
+    elseif event == "CHAT_MSG_WHISPER" then
+      main.sr_listener.on_chat_msg_whisper( arg1, arg2 )
     elseif event == "CHAT_MSG_SYSTEM" then
       main.on_chat_msg_system( arg1, arg2, arg3, arg4, arg5 )
     elseif event == "CHAT_MSG_ADDON" then
@@ -95,6 +97,7 @@ function M.handle_events( main )
   frame:RegisterEvent( "CHAT_MSG_RAID" )
   frame:RegisterEvent( "CHAT_MSG_RAID_LEADER" )
   frame:RegisterEvent( "CHAT_MSG_WHISPER_INFORM" )
+  frame:RegisterEvent( "CHAT_MSG_WHISPER" )
   -- OPEN_MASTER_LOOT_LIST fires when master looter right-clicks a loot slot.
   -- Wrap in pcall as some 3.3.5a private server builds may not expose this event.
   pcall( function() frame:RegisterEvent( "OPEN_MASTER_LOOT_LIST" ) end )

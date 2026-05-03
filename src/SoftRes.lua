@@ -11,14 +11,6 @@ local lib_stub = LibStub
 local keys = m.keys
 local transform = m.SoftResDataTransformer.transform
 
---function M:new()
---local o = {}
---setmetatable( o, self )
---self.__index = self
-
---return o
---end
-
 -- Taragaman the Hungerer all SR by Jogobobek:
 -- eyJtZXRhZGF0YSI6eyJpZCI6IjNRUzg1OCIsImluc3RhbmNlIjoxMDEsImluc3RhbmNlcyI6WyJLYXJhemhhbiJdLCJvcmlnaW4iOiJyYWlkcmVzIn0sInNvZnRyZXNlcnZlcyI6W3sibmFtZSI6IkpvZ29ib2JlayIsIml0ZW1zIjpbeyJpZCI6MTQxNDUsInF1YWxpdHkiOjN9LHsiaWQiOjE0MTQ4LCJxdWFsaXR5IjozfSx7ImlkIjoxNDE0OSwicXVhbGl0eSI6M31dfV0sImhhcmRyZXNlcnZlcyI6W119
 
@@ -156,7 +148,26 @@ function M.new( db )
   end
 
   local function get_item_quality( item_id )
-    return softres_data[ item_id ] and softres_data[ item_id ].quality
+    return (softres_data[ item_id ] and softres_data[ item_id ].quality)
+        or (hardres_data[ item_id ] and hardres_data[ item_id ].quality)
+  end
+
+  local function get_player_items( player_name )
+    local result = {}
+
+    for item_id, item in pairs( softres_data ) do
+      for _, roller in ipairs( item.rollers or {} ) do
+        if roller.name == player_name then
+          table.insert( result, {
+            item_id = item_id,
+            quality = item.quality,
+          } )
+          break
+        end
+      end
+    end
+
+    return result
   end
 
   return {
@@ -167,6 +178,7 @@ function M.new( db )
     get_item_quality = get_item_quality,
     get_hr_item_ids = get_hr_item_ids,
     is_item_hardressed = is_item_hardressed,
+    get_player_items = get_player_items,
     import = import,
     clear = clear,
     persist = persist

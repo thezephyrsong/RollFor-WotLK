@@ -46,7 +46,7 @@ In this example, the addon automatically detects that the item is soft-reserved 
 It restricts rolling for the item to these players only and resolves any tie automatically.  
 The Master Looter then assigns the item directly to the winner.
 
-<img src="https://github.com/sica42/roll-for-vanilla/blob/master/docs/gui-sr-tie.gif" alt="soft-res rolling" style="width:1024px;height:380">
+<img src="https://github.com/sica42/roll-for-vanilla/blob/master/docs/gui-sr-tie.gif" alt"="soft-res rolling" style="width:1024;height:380">
 
 
 ### Two top rolls win
