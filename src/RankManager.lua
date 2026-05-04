@@ -217,6 +217,8 @@ function M.new( db, guild_rank_importer )
     get_guild_rank_map   = get_guild_rank_map,
     get_player_overrides = get_player_overrides,
     refresh_guild_cache  = refresh_guild_cache,
+    get_rank_names       = guild_rank_importer.get_rank_names,
+    request_refresh      = guild_rank_importer.request_refresh,
     on_command           = on_command,
     Rank                 = M.Rank,
     rank_name            = M.rank_name,

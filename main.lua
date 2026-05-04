@@ -561,6 +561,9 @@ function M.on_player_login()
   M.import_encoded_softres_data( M.softres_db.data )
   M.softres_gui.load( M.softres_db.data )
 
+  -- Kick off an async guild roster fetch so rank data is ready when the Ranks tab is opened.
+  if M.rank_manager then M.rank_manager.request_refresh() end
+
   if M.welcome_popup.should_show() then M.welcome_popup.show() end
   LootFrame:UnregisterAllEvents()
 end

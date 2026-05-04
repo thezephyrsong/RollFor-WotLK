@@ -372,14 +372,13 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
           { text = "Unranked", value = 4 },
         }
 
-        local guild_rank_names = m.GuildRankImporter.new().get_rank_names()
+        local guild_rank_names = rank_manager.get_rank_names()
 
         if #guild_rank_names == 0 then
-          e.create_config( "No guild data yet - open the guild panel (G) first.", nil, "header" )
+          e.create_config( "No guild rank data. Press the button below to load.", nil, "header" )
         else
           for _, entry in ipairs( guild_rank_names ) do
             local caption = string.format( "[%d] %s", entry.index, entry.name )
-            local current_val = rank_manager.get_guild_rank_map()[ entry.index ] or 4
             e.create_config( caption, nil, "dropdown",
               "Map this guild rank to a roll priority tier.",
               function( value )
@@ -389,6 +388,23 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
             )
           end
         end
+
+        -- "Reload" button: requests fresh guild data then resets the setup flag
+        -- so the next Show re-runs the populate function with fresh rank names.
+        e.create_config( "Reload guild ranks", nil, "button", nil, function()
+          rank_manager.request_refresh()
+          -- Reset the setup flag on the scroll content so populate re-runs on next show
+          local area = frames[ "Ranks" ] and frames[ "Ranks" ].area
+          if area and area.scroll and area.scroll.content then
+            area.scroll.content.setup = nil
+          end
+          -- Hide and re-show to trigger OnShow → populate
+          local tab_area = frames[ "Ranks" ] and frames[ "Ranks" ].area
+          if tab_area then
+            tab_area:Hide()
+            tab_area:Show()
+          end
+        end )
 
         e.create_config( "Manual overrides", nil, "header" )
         e.create_config( "  /rfrank set <name> <veteran|member|trial>", nil, "header" )
