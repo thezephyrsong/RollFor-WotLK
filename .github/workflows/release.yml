@@ -8,42 +8,41 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          # This ensures we are on the branch, allowing us to push changes back
           ref: ${{ github.event.repository.default_branch }}
 
       - name: Extract version from tag
         id: version
         run: |
-          # Takes the tag (e.g., 1.0.10) and stores it
           VERSION=${GITHUB_REF#refs/tags/}
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Update version in RollFor-WotLK.toc
         run: |
-          # Replaces the placeholder with the actual version number
           sed -i "s/## Version: .*/## Version: ${{ env.VERSION }}/" RollFor-WotLK.toc
-          echo "Updated .toc file to version ${{ env.VERSION }}:"
-          grep "## Version:" RollFor-WotLK.toc
 
       - name: Commit and push version update
+        # This allows the workflow to keep going even if the push fails
+        continue-on-error: true
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add RollFor-WotLK.toc
-          # Only commits if the version actually changed
           git commit -m "chore: Update version to ${{ env.VERSION }}" || echo "No changes to commit"
-          # Pushes to your main/master branch
           git push origin HEAD:${{ github.event.repository.default_branch }}
 
       - name: Package and Release
         uses: BigWigsMods/packager@master
         with:
-         upload-dir: .
-         args: -n RollFor-WotLK
+          # Use the local files we just modified
+          upload-dir: .
+          # Force the folder name inside the zip to match your TOC
+          args: -n RollFor-WotLK -z RollFor-WotLK
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
