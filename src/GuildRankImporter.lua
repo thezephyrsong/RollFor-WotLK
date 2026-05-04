@@ -6,39 +6,62 @@ if m.GuildRankImporter then return end
 local M = {}
 
 ---@class GuildRankImporter
----@field get_rank_names fun(): string[]   -- ordered list of guild rank names (index 0-based from GM)
----@field get_player_ranks fun(): table    -- { [playerName] = rankIndex } for all guild members
+---@field get_rank_names fun(): table     -- ordered list of { index, name } entries
+---@field get_player_ranks fun(): table   -- { [playerName] = rankIndex } for all guild members
+---@field request_refresh fun()           -- fires GuildRoster() to populate client cache
 
---- Returns an ordered list of rank names from the guild (0 = GM).
---- WotLK: GuildControlGetRankName(index) where index is 0-based.
---- Returns nil when index is out of range.
-local function get_rank_names()
+--- Returns rank names via GuildControlGetRankName (1-based on 3.3.5a private servers).
+local function get_rank_names_from_control()
   local names = {}
-  local i = 0
-
-  while true do
+  for i = 1, 20 do
     local name = m.api.GuildControlGetRankName( i )
     if not name or name == "" then break end
     table.insert( names, { index = i, name = name } )
-    i = i + 1
-    if i > 20 then break end  -- safety cap
   end
-
   return names
 end
 
---- Refreshes the guild roster cache and returns { [playerName] = rankIndex }.
---- Callers should fire GuildRoster() before calling this if they need fresh data.
-local function get_player_ranks()
-  local result = {}
+--- Fallback: derive distinct rank entries by scanning roster members.
+--- Returns the same { index, name } format, deduplicated and sorted by index.
+--- Use this if GuildControlGetRankName returns nothing (data not yet loaded).
+local function get_rank_names_from_roster()
+  local seen  = {}
+  local names = {}
   local count = m.api.GetNumGuildMembers and m.api.GetNumGuildMembers() or 0
 
   for i = 1, count do
-    local name, _, rankIndex = m.api.GetGuildRosterInfo( i )
+    local _, rank_name, rank_index = m.api.GetGuildRosterInfo( i )
+    if rank_index and rank_name and not seen[ rank_index ] then
+      seen[ rank_index ] = true
+      table.insert( names, { index = rank_index, name = rank_name } )
+    end
+  end
+
+  table.sort( names, function( a, b ) return a.index < b.index end )
+  return names
+end
+
+--- Public: try GuildControlGetRankName first, fall back to roster scan.
+local function get_rank_names()
+  local names = get_rank_names_from_control()
+  if #names == 0 then
+    names = get_rank_names_from_roster()
+  end
+  return names
+end
+
+--- Returns { [playerName] = rankIndex } for every guild member.
+--- Callers should ensure GuildRoster() has been fired before calling this.
+local function get_player_ranks()
+  local result = {}
+  local count  = m.api.GetNumGuildMembers and m.api.GetNumGuildMembers() or 0
+
+  for i = 1, count do
+    local name, _, rank_index = m.api.GetGuildRosterInfo( i )
     if name then
       -- Strip realm suffix if present (e.g. "Player-ServerName")
       name = string.match( name, "^([^%-]+)" ) or name
-      result[ name ] = rankIndex
+      result[ name ] = rank_index
     end
   end
 
@@ -46,7 +69,7 @@ local function get_player_ranks()
 end
 
 --- Requests an async guild roster refresh from the server.
---- Results won't be available until GUILD_ROSTER_UPDATE fires.
+--- Results arrive via GUILD_ROSTER_UPDATE event.
 local function request_refresh()
   if m.api.GuildRoster then
     m.api.GuildRoster()
