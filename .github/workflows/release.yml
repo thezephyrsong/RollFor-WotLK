@@ -39,6 +39,6 @@ jobs:
       - name: Package and Release
         uses: BigWigsMods/packager@master
         with:
-          args: -p . -n RollFor-WotLK -z RollFor-WotLK -r
+          args: -m .pkgmeta -n RollFor-WotLK
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
