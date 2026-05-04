@@ -145,6 +145,7 @@ if M.api.RAID_CLASS_COLORS then
   M.api.RAID_CLASS_COLORS.DRUID.colorStr = "ffff7d0a"
   M.api.RAID_CLASS_COLORS.SHAMAN.colorStr = "ff0070de"
   M.api.RAID_CLASS_COLORS.WARRIOR.colorStr = "ffc79c6e"
+  M.api.RAID_CLASS_COLORS.DEATHKNIGHT.colorStr = "ffc41e3a"
 end
 
 function M.print( message )
@@ -458,14 +459,21 @@ function M.colorize_item_by_quality( item_name, quality )
   return color .. item_name .. M.api.FONT_COLOR_CODE_CLOSE
 end
 
-function M.colorize_player_by_class( name, class )
-  if not class then return name end
-  local color = M.api.RAID_CLASS_COLORS[ string.upper( class ) ].colorStr
-  if not color then
-    local c = M.api.RAID_CLASS_COLORS[ string.upper( class ) ]
-    color = string.format( "ff%02x%02x%02x", c.r * 255, c.g * 255, c.b * 255 )
-  end
-  return "|c" .. color .. name .. M.api.FONT_COLOR_CODE_CLOSE
+function M.colorize_player_by_class(name, class)
+    if not class then
+        return name
+    end
+
+    local cl = string.upper(string.gsub(class, "%W", ""))
+    if cl == nil or cl == '' then
+        return name
+    end
+
+    local color = M.api.RAID_CLASS_COLORS[cl]
+    if color == nil then
+        return name
+    end
+    return "|c" .. color.colorStr .. name .. M.api.FONT_COLOR_CODE_CLOSE
 end
 
 local base64_chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/' -- You will need this for encoding/decoding
