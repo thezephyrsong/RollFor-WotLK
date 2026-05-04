@@ -12,6 +12,8 @@ function M.new( db )
     local proxy = {}
     local mt = {
       __index = function( _, key )
+        -- Add this check to allow accessing the underlying table directly
+        if key == "raw" then return db[ module_name ] end
         return db[ module_name ][ key ]
       end,
       __newindex = function( _, key, value )
@@ -23,6 +25,5 @@ function M.new( db )
     return proxy
   end
 end
-
 m.Db = M
 return M
