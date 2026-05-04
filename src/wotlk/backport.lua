@@ -2,8 +2,11 @@
 -- WotLK (3.3.5a) backport shims.
 -- Most APIs that needed backporting for Vanilla exist natively in WotLK,
 -- so this file is intentionally minimal.
+function IsInParty() return GetNumRaidMembers() == 0 and GetNumPartyMembers() > 0 end
 
--- IsInParty/IsInRaid/IsInGroup exist natively in WotLK — no shim needed.
+function IsInRaid() return GetNumRaidMembers() > 0 end
+
+function IsInGroup() return IsInParty() or IsInRaid() end
 
 -- string.gmatch exists natively in WotLK (Lua 5.1) — no shim needed.
 
