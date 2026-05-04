@@ -37,8 +37,8 @@ jobs:
           git push origin HEAD:${{ github.event.repository.default_branch }}
 
       - name: Package and Release
-        uses: BigWigsMods/packager@master
+        uses: BigWigsMods/packager@v2
         with:
-          args: -m .pkgmeta -n RollFor-WotLK
+          args: -S -n "RollFor-WotLK"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
