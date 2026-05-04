@@ -165,9 +165,12 @@ local function create_components()
     M.rolling_popup
   )
 
-  --- CIRCULAR DEPENDENCY FIX SEQUENCE ---
+  --- CIRCULAR DEPENDENCY FIX SEQUENCE ---[cite: 3]
+  
+  -- 1. Create LootAwardCallback first with nil for controller[cite: 3]
   M.loot_award_callback = m.LootAwardCallback.new( M.awarded_loot, nil, M.winner_tracker, M.group_roster, M.softres, M.confirm_popup, M.config )
 
+  -- 2. Create RollController and pass in the callback as the 9th argument[cite: 1, 3]
   M.roll_controller = m.RollController.new(
     M.master_loot_candidates,
     M.softres,
@@ -180,20 +183,17 @@ local function create_components()
     M.loot_award_callback
   )
 
+  -- 3. Link the controller back to the callback using the setter[cite: 3]
   M.loot_award_callback.set_roll_controller( M.roll_controller )
+
   -----------------------------------------
 
   M.master_loot = m.MasterLoot.new( M.master_loot_candidates, M.loot_award_callback, M.loot_list, M.roll_controller )
   M.auto_loot = m.AutoLoot.new( M.loot_list, M.api, db( "auto_loot" ), M.config, M.player_info )
   M.dropped_loot_announce = m.DroppedLootAnnounce.new( M.loot_list, M.chat, M.dropped_loot, M.softres, M.winner_tracker, M.player_info, M.auto_loot, M.config )
   M.winners_popup = m.WinnersPopup.new( popup_builder(), m.FrameBuilder, db( "winners_popup" ), M.awarded_loot, M.roll_controller, M.confirm_popup, M.config )
+  M.options_popup = m.OptionsPopup.new( popup_builder(), M.awarded_loot, M.version_broadcast, M.config_event_bus, M.confirm_popup, M.group_roster, db( "options_popup" ), db( "config" ), M.config, M.rank_manager )
 
-  -- Initialize Rank Components
-  M.guild_rank_importer = m.GuildRankImporter.new()
-  M.rank_manager = m.RankManager.new( db( "rank_manager" ), M.guild_rank_importer, M.config_event_bus )
-
-M.options_popup = m.OptionsPopup.new( popup_builder(), M.awarded_loot, M.version_broadcast, M.config_event_bus, M.confirm_popup, M.group_roster, db( "options_popup" ), db( "config" ), M.config, M.rank_manager )
-  
   M.softres_gui = m.SoftResGui.new( M.api, M.import_encoded_softres_data, M.softres_check, M.softres, clear_data, M.dropped_loot_announce.reset, M.ace_timer, M.group_roster, M.unfiltered_softres )
   M.sr_listener = m.SrListener.new( M.player_info, M.unfiltered_softres )
   M.trade_tracker = m.TradeTracker.new( M.ace_timer, M.chat, trade_complete_callback )
@@ -209,6 +209,8 @@ M.options_popup = m.OptionsPopup.new( popup_builder(), M.awarded_loot, M.version
   M.welcome_popup = m.WelcomePopup.new( m.FrameBuilder, M.ace_timer, db( "welcome_popup" ) )
   M.roll_for_ad = m.RollForAd.new( M.player_info )
 
+  M.guild_rank_importer = m.GuildRankImporter.new()
+  M.rank_manager = m.RankManager.new( db( "rank_manager" ), M.guild_rank_importer )
   M.rolling_strategy_factory = m.RollingStrategyFactory.new( M.group_roster, M.loot_list, M.master_loot_candidates, M.chat, M.ace_timer, M.winner_tracker, M.config, M.softres, M.player_info, M.awarded_loot, M.rank_manager )
   M.rolling_logic = m.RollingLogic.new( M.chat, M.ace_timer, M.roll_controller, M.rolling_strategy_factory, M.master_loot_candidates, M.winner_tracker, M.config )
 
@@ -559,8 +561,21 @@ function M.on_player_login()
   M.import_encoded_softres_data( M.softres_db.data )
   M.softres_gui.load( M.softres_db.data )
 
-  -- Start async fetch for rank data
-  if M.rank_manager then M.rank_manager.request_refresh() end
+  -- Request guild roster then read it after a short delay.
+  -- GUILD_ROSTER_UPDATE is unreliable on some 3.3.5a private servers,
+  -- so we use a one-shot OnUpdate timer as a fallback.
+  if M.rank_manager then
+    M.rank_manager.request_refresh()
+    local elapsed = 0
+    local ticker = CreateFrame( "Frame" )
+    ticker:SetScript( "OnUpdate", function()
+      elapsed = elapsed + arg1
+      if elapsed >= 2 then
+        ticker:SetScript( "OnUpdate", nil )
+        M.on_guild_roster_update()
+      end
+    end )
+  end
 
   if M.welcome_popup.should_show() then M.welcome_popup.show() end
   LootFrame:UnregisterAllEvents()

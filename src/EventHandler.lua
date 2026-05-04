@@ -37,6 +37,8 @@ function M.handle_events( main )
       main.on_group_changed()
       main.new_group_event.on_group_changed()
     elseif event == "GUILD_ROSTER_UPDATE" then
+      -- GUILD_ROSTER_UPDATE fires on some 3.3.5a private servers but not all.
+      -- We handle it here if it fires, but don't depend on it exclusively.
       main.on_guild_roster_update()
     elseif event == "CHAT_MSG_PARTY" then
       main.roll_for_ad.on_chat_msg_party( arg1, arg2 )
