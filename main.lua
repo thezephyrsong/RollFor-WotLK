@@ -192,8 +192,8 @@ local function create_components()
   M.guild_rank_importer = m.GuildRankImporter.new()
   M.rank_manager = m.RankManager.new( db( "rank_manager" ), M.guild_rank_importer, M.config_event_bus )
 
-  M.options_popup = m.OptionsPopup.new( popup_builder(), M.awarded_loot, M.version_broadcast, M.config_event_bus, M.confirm_popup, M.group_roster, db( "options_popup" ), db( "config" ), M.config, M.rank_manager )
-
+M.options_popup = m.OptionsPopup.new( popup_builder(), M.awarded_loot, M.version_broadcast, M.config_event_bus, M.confirm_popup, M.group_roster, db( "options_popup" ), db( "config" ), M.config, M.rank_manager )
+  
   M.softres_gui = m.SoftResGui.new( M.api, M.import_encoded_softres_data, M.softres_check, M.softres, clear_data, M.dropped_loot_announce.reset, M.ace_timer, M.group_roster, M.unfiltered_softres )
   M.sr_listener = m.SrListener.new( M.player_info, M.unfiltered_softres )
   M.trade_tracker = m.TradeTracker.new( M.ace_timer, M.chat, trade_complete_callback )
