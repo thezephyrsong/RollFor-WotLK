@@ -20,7 +20,7 @@ jobs:
       - name: Package and Release
         uses: BigWigsMods/packager@v2
         with:
-          args: -n "RollFor-WotLK" -c
+          args: -n "RollFor-WotLK" -c -t .
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
