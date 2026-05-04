@@ -55,10 +55,12 @@ function M.new( api, db, manage_softres_fn, winners_popup_fn, options_popup_fn, 
     local frame = api().CreateFrame( "Button", "RollForMinimapButton", api().Minimap )
     local was_dragging = false
 
-    function frame.OnClick( self )
+    function frame.OnClick( self, button )
       if m.vanilla then self = this end
 
-      if m.is_shift_key_down() then
+      if button == "RightButton" then
+        options_popup_fn()
+      elseif m.is_shift_key_down() then
         winners_popup_fn()
       elseif m.is_ctrl_key_down() then
         options_popup_fn()
@@ -111,6 +113,7 @@ function M.new( api, db, manage_softres_fn, winners_popup_fn, options_popup_fn, 
         api().GameTooltip:AddLine( string.format( "%s - %s", hl( "/rf config help" ), white( "show configuration help" ) ) )
         api().GameTooltip:AddLine( " " )
         api().GameTooltip:AddLine( "Click to manage softres." )
+        api().GameTooltip:AddLine( "Right-click for settings." )
         api().GameTooltip:AddLine( "Ctrl+Click for settings." )
         api().GameTooltip:AddLine( "Shift+Click for winner overview." )
 

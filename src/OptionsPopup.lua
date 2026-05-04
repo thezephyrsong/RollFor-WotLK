@@ -328,6 +328,7 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
       end
       e.create_config( "Rolling popup lock", "rolling_popup_lock", "checkbox", "Locks the rolling popup position.", notify )
       e.create_config( "Show Raid roll again button", "raid_roll_again", "checkbox", nil, notify )
+      e.create_config( "Show Open Roll button", "show_open_roll_button", "checkbox", "Show the Open Roll button in the rolling popup for SR items.", notify )
       e.create_config( "Show player roles", "show_player_roles", "checkbox", "Show player roles in rolling popup" )
       e.create_config( "MainSpec rolling threshold", "ms_roll_threshold", "number" )
       e.create_config( "OffSpec rolling threshold", "os_roll_threshold", "number" )

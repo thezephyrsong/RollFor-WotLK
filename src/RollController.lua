@@ -399,7 +399,7 @@ function M.new(
 
   local function preview_hard_ressed_item( buttons, item, item_count, dropped_item, candidate_count, candidates )
     add_sr_roll_button( buttons, item, item_count )
-    add_arf_roll_button( buttons, item, item_count )
+    if config.show_open_roll_button() then add_arf_roll_button( buttons, item, item_count ) end
     add_roll_button( buttons, RS.SoftResRoll, item, item_count )
     if candidate_count > 0 then add_award_other_button( dropped_item, buttons, candidates, {}, RS.SoftResRoll ) end
     add_close_button( buttons, S.Preview )
@@ -441,7 +441,7 @@ function M.new(
 
   local function preview_sr_items_not_equal_to_item_count( soft_ressers, item, item_count, dropped_item, buttons, candidate_count, candidates )
     add_sr_roll_button( buttons, item, item_count )
-    add_arf_roll_button( buttons, item, item_count )
+    if config.show_open_roll_button() then add_arf_roll_button( buttons, item, item_count ) end
     add_roll_button( buttons, RS.SoftResRoll, item, item_count )
     if candidate_count > 0 then add_award_other_button( dropped_item, buttons, candidates, {}, RS.SoftResRoll ) end
     add_close_button( buttons, S.Preview )
