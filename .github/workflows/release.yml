@@ -17,10 +17,17 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.ref }}
 
-      - name: Package and Release
-        uses: BigWigsMods/packager@v2
+      - name: Build zip
+        run: |
+          mkdir -p RollFor-WotLK
+          rsync -av --exclude='.git' --exclude='.github' --exclude='.gitignore' \
+            --exclude='.gitattributes' --exclude='.pkgmeta' --exclude='SoftRes' \
+            --exclude='RollFor-WotLK' . RollFor-WotLK/
+          zip -r RollFor-WotLK.zip RollFor-WotLK/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
         with:
-          args: -n "RollFor-WotLK" -c -t .
+          files: RollFor-WotLK.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
