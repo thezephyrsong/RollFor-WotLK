@@ -45,7 +45,8 @@ function M.new(
     config,
     softres,
     player_info,
-    awarded_loot
+    awarded_loot,
+    rank_manager
 )
   ---@param item Item
   ---@param item_count number
@@ -62,7 +63,8 @@ function M.new(
           return p ~= nil and p.player_name == player.name and p.plus_one
         end)))
       end
-      return make_rolling_player( player.name, player.class, player.role, player.online, 1, plus_ones )
+      local rank = rank_manager and config.rank_priority_enabled() and rank_manager.get_player_rank( player.name ) or 4
+      return make_rolling_player( player.name, player.class, player.role, player.online, 1, plus_ones, rank )
     end )
 
     return m.NonSoftResRollingLogic.new(
@@ -141,7 +143,7 @@ function M.new(
     local rollers = m.map( players,
       ---@param player RollingPlayer
       function( player )
-        return make_rolling_player( player.name, player.class, player.role, player.online, 1, player.plus_ones )
+        return make_rolling_player( player.name, player.class, player.role, player.online, 1, player.plus_ones, player.rank )
       end
     )
 

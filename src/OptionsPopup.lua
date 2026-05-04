@@ -27,7 +27,7 @@ M.center_point = { point = "CENTER", relative_point = "CENTER", x = 0, y = 150 }
 ---@param db table
 ---@param config_db table
 ---@param config Config
-function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confirm_popup, group_roster, db, config_db, config )
+function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confirm_popup, group_roster, db, config_db, config, rank_manager )
   ---@type Frame
   local popup
   local frames = {}
@@ -357,8 +357,47 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
       end )
     end )
 
+    e.create_gui_entry( "Ranks", frames, function()
+      e.create_config( "Rank priority settings", nil, "header" )
+      e.create_config( "Enable rank priority on rolls", "rank_priority_enabled", "checkbox",
+        "When enabled, Veterans beat Members beat Trials regardless of roll value.", notify )
+
+      if rank_manager then
+        e.create_config( "Guild rank mapping", nil, "header" )
+
+        local rank_opts = {
+          { text = "Veteran",  value = 1 },
+          { text = "Member",   value = 2 },
+          { text = "Trial",    value = 3 },
+          { text = "Unranked", value = 4 },
+        }
+
+        local guild_rank_names = m.GuildRankImporter.new().get_rank_names()
+
+        if #guild_rank_names == 0 then
+          e.create_config( "No guild data yet - open the guild panel (G) first.", nil, "header" )
+        else
+          for _, entry in ipairs( guild_rank_names ) do
+            local caption = string.format( "[%d] %s", entry.index, entry.name )
+            local current_val = rank_manager.get_guild_rank_map()[ entry.index ] or 4
+            e.create_config( caption, nil, "dropdown",
+              "Map this guild rank to a roll priority tier.",
+              function( value )
+                rank_manager.set_guild_rank_map( entry.index, value )
+              end,
+              rank_opts
+            )
+          end
+        end
+
+        e.create_config( "Manual overrides", nil, "header" )
+        e.create_config( "  /rfrank set <name> <veteran|member|trial>", nil, "header" )
+        e.create_config( "  /rfrank clear <name>", nil, "header" )
+        e.create_config( "  /rfrank list", nil, "header" )
+      end
+    end )
+
     e.create_gui_entry( "Client", frames, function()
-      e.create_config( "Client settings", nil, "header" )
       e.create_config( "Show roll popup", "client_show_roll_popup", "dropdown", "Select when to show the roll popup.", nil, {
         { text = "Off",      value = "Off" },
         { text = "Always",   value = "Always" },

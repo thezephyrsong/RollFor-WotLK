@@ -36,6 +36,8 @@ function M.handle_events( main )
       main.version_broadcast.on_group_changed()
       main.on_group_changed()
       main.new_group_event.on_group_changed()
+    elseif event == "GUILD_ROSTER_UPDATE" then
+      main.on_guild_roster_update()
     elseif event == "CHAT_MSG_PARTY" then
       main.roll_for_ad.on_chat_msg_party( arg1, arg2 )
       -- main.on_chat_msg_system( arg1, arg2, arg3, arg4, arg5 )
@@ -89,6 +91,7 @@ function M.handle_events( main )
   local frame = m.api.CreateFrame( "FRAME", "RollForFrame" )
 
   frame:RegisterEvent( "PLAYER_LOGIN" )
+  pcall( function() frame:RegisterEvent( "GUILD_ROSTER_UPDATE" ) end )
   -- GROUP_JOINED/LEFT/FORMED are Cataclysm+ events and do not exist in WotLK 3.3.5a.
   -- Group roster changes are handled via GROUP_ROSTER_UPDATE registered below.
   frame:RegisterEvent( "CHAT_MSG_SYSTEM" )

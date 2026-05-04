@@ -186,6 +186,7 @@ end
 ---@field rolls number
 ---@field sr_plus number
 ---@field plus_ones number
+---@field rank number
 ---@field type "RollingPlayer"
 
 ---@alias MakeRollingPlayerFn fun(
@@ -194,7 +195,8 @@ end
 ---  role: string,
 ---  online: boolean,
 ---  rolls: number,
----  plus_ones: number ): RollingPlayer
+---  plus_ones: number,
+---  rank: number? ): RollingPlayer
 
 ---@type MakeRollingPlayerFn
 ---@param name string
@@ -203,7 +205,7 @@ end
 ---@param online boolean
 ---@param rolls number
 ---@return RollingPlayer
-function M.make_rolling_player( name, class, role, online, rolls, plus_ones )
+function M.make_rolling_player( name, class, role, online, rolls, plus_ones, rank )
   return {
     name = name,
     class = class,
@@ -211,7 +213,8 @@ function M.make_rolling_player( name, class, role, online, rolls, plus_ones )
     online = online,
     rolls = rolls,
     type = PlayerType.RollingPlayer,
-    plus_ones = plus_ones
+    plus_ones = plus_ones,
+    rank = rank or 4  -- 4 = Unranked, lowest priority
   }
 end
 

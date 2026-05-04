@@ -192,7 +192,7 @@ local function create_components()
   M.auto_loot = m.AutoLoot.new( M.loot_list, M.api, db( "auto_loot" ), M.config, M.player_info )
   M.dropped_loot_announce = m.DroppedLootAnnounce.new( M.loot_list, M.chat, M.dropped_loot, M.softres, M.winner_tracker, M.player_info, M.auto_loot, M.config )
   M.winners_popup = m.WinnersPopup.new( popup_builder(), m.FrameBuilder, db( "winners_popup" ), M.awarded_loot, M.roll_controller, M.confirm_popup, M.config )
-  M.options_popup = m.OptionsPopup.new( popup_builder(), M.awarded_loot, M.version_broadcast, M.config_event_bus, M.confirm_popup, M.group_roster, db( "options_popup" ), db( "config" ), M.config )
+  M.options_popup = m.OptionsPopup.new( popup_builder(), M.awarded_loot, M.version_broadcast, M.config_event_bus, M.confirm_popup, M.group_roster, db( "options_popup" ), db( "config" ), M.config, M.rank_manager )
 
   M.softres_gui = m.SoftResGui.new( M.api, M.import_encoded_softres_data, M.softres_check, M.softres, clear_data, M.dropped_loot_announce.reset, M.ace_timer, M.group_roster, M.unfiltered_softres )
   M.sr_listener = m.SrListener.new( M.player_info, M.unfiltered_softres )
@@ -209,7 +209,9 @@ local function create_components()
   M.welcome_popup = m.WelcomePopup.new( m.FrameBuilder, M.ace_timer, db( "welcome_popup" ) )
   M.roll_for_ad = m.RollForAd.new( M.player_info )
 
-  M.rolling_strategy_factory = m.RollingStrategyFactory.new( M.group_roster, M.loot_list, M.master_loot_candidates, M.chat, M.ace_timer, M.winner_tracker, M.config, M.softres, M.player_info, M.awarded_loot )
+  M.guild_rank_importer = m.GuildRankImporter.new()
+  M.rank_manager = m.RankManager.new( db( "rank_manager" ), M.guild_rank_importer )
+  M.rolling_strategy_factory = m.RollingStrategyFactory.new( M.group_roster, M.loot_list, M.master_loot_candidates, M.chat, M.ace_timer, M.winner_tracker, M.config, M.softres, M.player_info, M.awarded_loot, M.rank_manager )
   M.rolling_logic = m.RollingLogic.new( M.chat, M.ace_timer, M.roll_controller, M.rolling_strategy_factory, M.master_loot_candidates, M.winner_tracker, M.config )
 
   M.loot_controller = m.LootController.new( M.player_info, M.loot_facade, M.loot_list, M.loot_frame, M.roll_controller, M.softres, M.rolling_logic, M.chat )
@@ -537,6 +539,12 @@ local function setup_slash_commands()
   M.api().SlashCmdList[ "RFT" ] = M.sandbox.run
   SLASH_PL1 = "/pl"
   M.api().SlashCmdList[ "PL"] = plus_ones_command
+  SLASH_RFRANK1 = "/rfrank"
+  M.api().SlashCmdList[ "RFRANK" ] = function( args ) M.rank_manager.on_command( args ) end
+end
+
+function M.on_guild_roster_update()
+  if M.rank_manager then M.rank_manager.refresh_guild_cache() end
 end
 
 function M.on_player_login()

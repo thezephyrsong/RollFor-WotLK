@@ -83,6 +83,8 @@ src\LootList.lua
 src\SoftResLootListDecorator.lua
 src\LootFrame.lua
 src\RollForAd.lua
+src\GuildRankImporter.lua
+src\RankManager.lua
 src\RollingStrategyFactory.lua
 src\RollingLogic.lua
 src\ArgsParser.lua

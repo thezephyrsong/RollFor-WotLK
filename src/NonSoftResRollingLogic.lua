@@ -66,6 +66,10 @@ function M.new(
 
   local function sort_rolls()
     local f = function( a, b )
+      -- Rank is always the primary sort key (lower rank number = higher priority)
+      local rank_a = a.player.rank or 4
+      local rank_b = b.player.rank or 4
+      if rank_a ~= rank_b then return rank_a < rank_b end
       if a.roll_type == RollType.MainSpec and a.player.plus_ones ~= b.player.plus_ones then
         return a.player.plus_ones < b.player.plus_ones
       end
@@ -139,13 +143,15 @@ function M.new(
         local last_roll
         local last_type
         local last_plus_ones
+        local last_rank
 
         for _, roll in ipairs( all_rolls ) do
-          if not last_roll or last_roll ~= roll.roll or last_type ~= roll.roll_type or roll.roll_type == RollType.MainSpec and last_plus_ones ~= roll.player.plus_ones  then
+          if not last_roll or last_roll ~= roll.roll or last_type ~= roll.roll_type or roll.roll_type == RollType.MainSpec and last_plus_ones ~= roll.player.plus_ones or (roll.player.rank or 4) ~= last_rank then
             table.insert( result, { roll } )
             last_roll = roll.roll
             last_type = roll.roll_type
             last_plus_ones = roll.player.plus_ones
+            last_rank = roll.player.rank or 4
           else
             table.insert( result[ getn( result ) ], roll )
           end

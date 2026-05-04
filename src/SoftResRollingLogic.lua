@@ -111,6 +111,10 @@ function M.new(
 
   local function sort_rolls()
     table.sort( rolls, function( a, b )
+      -- Rank is always the primary sort key (lower rank number = higher priority)
+      local rank_a = a.player.rank or 4
+      local rank_b = b.player.rank or 4
+      if rank_a ~= rank_b then return rank_a < rank_b end
       if a.roll == b.roll then
         return a.player.name < b.player.name
       else
