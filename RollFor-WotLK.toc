@@ -1,7 +1,7 @@
 ## Interface: 30300
 ## Title: RollFor
 ## Author: Zae
-## Version: @project-version@
+## Version: 1.0.10
 ## Notes: An automated item roller with soft ressing support via softres.epoglogs.com.
 ## SavedVariables: RollForDb
 ## SavedVariablesPerCharacter: RollForCharDb
