@@ -237,7 +237,7 @@ function M.new(
 
   local function accept_rolls()
     rolling = true
-    timer = ace_timer.ScheduleRepeatingTimer( M, on_timer, 1.7 )
+    timer = ace_timer:ScheduleRepeatingTimer( on_timer, 1 )
   end
 
   local function format_name_with_rolls( player )
