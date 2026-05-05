@@ -68,10 +68,10 @@ function M.new( db, guild_rank_importer, event_bus )
     local override = db.player_ranks[ player_name ]
     if override then return override end
 
-    -- 2. Try guild rank mapping (handles 0-based vs 1-based indexing)
+    -- 2. Try guild rank mapping (1-based indices on 3.3.5a)
     local guild_rank_index = guild_player_cache[ player_name ]
     if guild_rank_index ~= nil then
-      local mapped = db.guild_rank_map[ guild_rank_index ] or db.guild_rank_map[ guild_rank_index + 1 ]
+      local mapped = db.guild_rank_map[ guild_rank_index ]
       if mapped then return mapped end
     end
 
@@ -94,14 +94,12 @@ function M.new( db, guild_rank_importer, event_bus )
     db.guild_rank_map[ rank_index ] = rank
   end
 
-  --- Uses .raw to allow iteration over the proxy table
   local function get_guild_rank_map()
-    return db.guild_rank_map.raw or db.guild_rank_map
+    return db.guild_rank_map
   end
 
-  --- Uses .raw to allow iteration over the proxy table[cite: 1]
   local function get_player_overrides()
-    return db.player_ranks.raw or db.player_ranks
+    return db.player_ranks
   end
 
   --- Returns rank names for UI population.
@@ -137,7 +135,7 @@ function M.new( db, guild_rank_importer, event_bus )
     info( "Guild rank mapping:" )
     local raw_map = get_guild_rank_map()
     for _, entry in ipairs( rank_names ) do
-      local mapped = raw_map[ entry.index ] or raw_map[ entry.index - 1 ]
+      local mapped = raw_map[ entry.index ]
       local mapped_str = mapped and hl( M.rank_name( mapped ) ) or grey( "unmapped (Trial)" )
       info( string.format( "  [%d] %s → %s", entry.index, entry.name, mapped_str ) )
     end

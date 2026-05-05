@@ -375,25 +375,33 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
         local guild_rank_names = rank_manager.get_rank_names()
 
         if #guild_rank_names == 0 then
-          e.create_config( "No guild rank data. Press the button below to load.", nil, "header" )
+          e.create_config( "No guild rank data. Press Reload below.", nil, "header" )
         else
+          -- Seed config_db with current guild_rank_map values so dropdowns show current state
+          local current_map = rank_manager.get_guild_rank_map()
+          for _, entry in ipairs( guild_rank_names ) do
+            local key = "guild_rank_idx_" .. entry.index
+            if config_db[ key ] == nil then
+              config_db[ key ] = current_map[ entry.index ] or 4
+            end
+          end
+
           for _, entry in ipairs( guild_rank_names ) do
             local caption = string.format( "[%d] %s", entry.index, entry.name )
-            e.create_config( caption, nil, "dropdown",
+            local key = "guild_rank_idx_" .. entry.index
+            local idx = entry.index  -- capture for closure
+            e.create_config( caption, key, "dropdown",
               "Map this guild rank to a roll priority tier.",
               function( value )
-                rank_manager.set_guild_rank_map( entry.index, value )
+                rank_manager.set_guild_rank_map( idx, value )
               end,
               rank_opts
             )
           end
         end
 
-        -- "Reload" button: requests fresh guild data then resets the setup flag
-        -- so the next Show re-runs the populate function with fresh rank names.
         e.create_config( "Reload guild ranks", nil, "button", nil, function()
           rank_manager.request_refresh()
-          -- Read results after a short delay (GUILD_ROSTER_UPDATE unreliable on 3.3.5a)
           local elapsed = 0
           local ticker = CreateFrame( "Frame" )
           ticker:SetScript( "OnUpdate", function()
@@ -401,7 +409,6 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
             if elapsed >= 2 then
               ticker:SetScript( "OnUpdate", nil )
               rank_manager.refresh_guild_cache()
-              -- Reset setup flag so the tab rebuilds on next show
               local area = frames[ "Ranks" ] and frames[ "Ranks" ].area
               if area and area.scroll and area.scroll.content then
                 area.scroll.content.setup = nil
@@ -412,7 +419,7 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
         end )
 
         e.create_config( "Manual overrides", nil, "header" )
-        e.create_config( "  /rfrank set <name> <veteran|member|trial>", nil, "header" )
+        e.create_config( "  /rfrank set <name> <veteran | member | trial>", nil, "header" )
         e.create_config( "  /rfrank clear <name>", nil, "header" )
         e.create_config( "  /rfrank list", nil, "header" )
       end

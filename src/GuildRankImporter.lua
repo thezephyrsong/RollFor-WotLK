@@ -10,20 +10,31 @@ local M = {}
 ---@field get_player_ranks fun(): table   -- { [playerName] = rankIndex } for all guild members
 ---@field request_refresh fun()           -- fires GuildRoster() to populate client cache
 
---- Returns rank names via GuildControlGetRankName (1-based on 3.3.5a private servers).
-local function get_rank_names_from_control()
+--- Scan GuildControlGetRankName across a range of indices, return all non-empty results.
+local function scan_rank_names( start, stop )
   local names = {}
-  for i = 1, 20 do
+  for i = start, stop do
     local name = m.api.GuildControlGetRankName( i )
-    if not name or name == "" then break end
-    table.insert( names, { index = i, name = name } )
+    if name and name ~= "" then
+      table.insert( names, { index = i, name = name } )
+    end
   end
   return names
 end
 
+--- Try 0-based then 1-based indexing, use whichever returns more results.
+local function get_rank_names_from_control()
+  local zero_based = scan_rank_names( 0, 15 )
+  local one_based  = scan_rank_names( 1, 15 )
+  -- Prefer the set that starts at a lower index (more complete)
+  if #zero_based > 0 and ( #one_based == 0 or zero_based[1].index < one_based[1].index ) then
+    return zero_based
+  end
+  return one_based
+end
+
 --- Fallback: derive distinct rank entries by scanning roster members.
---- Returns the same { index, name } format, deduplicated and sorted by index.
---- Use this if GuildControlGetRankName returns nothing (data not yet loaded).
+--- Use when GuildControlGetRankName returns nothing.
 local function get_rank_names_from_roster()
   local seen  = {}
   local names = {}
@@ -51,7 +62,6 @@ local function get_rank_names()
 end
 
 --- Returns { [playerName] = rankIndex } for every guild member.
---- Callers should ensure GuildRoster() has been fired before calling this.
 local function get_player_ranks()
   local result = {}
   local count  = m.api.GetNumGuildMembers and m.api.GetNumGuildMembers() or 0
@@ -59,7 +69,6 @@ local function get_player_ranks()
   for i = 1, count do
     local name, _, rank_index = m.api.GetGuildRosterInfo( i )
     if name then
-      -- Strip realm suffix if present (e.g. "Player-ServerName")
       name = string.match( name, "^([^%-]+)" ) or name
       result[ name ] = rank_index
     end
@@ -69,7 +78,6 @@ local function get_player_ranks()
 end
 
 --- Requests an async guild roster refresh from the server.
---- Results arrive via GUILD_ROSTER_UPDATE event.
 local function request_refresh()
   if m.api.GuildRoster then
     m.api.GuildRoster()

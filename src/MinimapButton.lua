@@ -59,11 +59,11 @@ function M.new( api, db, manage_softres_fn, winners_popup_fn, options_popup_fn, 
       if m.vanilla then self = this end
 
       if button == "RightButton" then
-        options_popup_fn()
+        if options_popup_fn then options_popup_fn() end
       elseif m.is_shift_key_down() then
         winners_popup_fn()
       elseif m.is_ctrl_key_down() then
-        options_popup_fn()
+        if options_popup_fn then options_popup_fn() end
       else
         manage_softres_fn()
       end
