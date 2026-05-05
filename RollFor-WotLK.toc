@@ -2,7 +2,7 @@
 ## Title: RollFor
 ## Author: Zae
 ## Version: 1.0.69
-## Notes: An automated item roller with soft ressing support via SoftRes.
+## Notes: An automated item roller with soft ressing support via softres.epoglogs.com.
 ## SavedVariables: RollForDb
 ## SavedVariablesPerCharacter: RollForCharDb
 
