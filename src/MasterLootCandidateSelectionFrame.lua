@@ -176,7 +176,7 @@ function M.new( frame_builder, config )
     m_frame:SetHeight( (button_height + vertical_padding) * total_rows + vertical_padding + vertical_margin * 2 )
   end
 
-  ---@param candidates MasterLootCandidate[]
+---@param candidates MasterLootCandidate[]
   local function create_candidate_frames( candidates )
     local total = getn( candidates )
     local rows = config.master_loot_frame_rows()
@@ -197,16 +197,21 @@ function M.new( frame_builder, config )
 
       local button = m_buttons[ i ]
       button.text:SetText( candidate.name )
-      local color = m.api.RAID_CLASS_COLORS[ string.upper( candidate.class ) ]
+      
+      -- Guard against candidate.class being nil/unrecognized safely
+      local class_str = candidate.class and string.upper( candidate.class ) or "UNKNOWN"
+      local color = m.api.RAID_CLASS_COLORS[ class_str ]
       button.color = color
       button.player = candidate
 
       if color then
         button.text:SetTextColor( color.r, color.g, color.b )
-        dim( button )
       else
-        button.text:SetTextColor( 1, 1, 1 )
+        button.text:SetTextColor( 1, 1, 1 ) -- White fallback text for unknown classes
       end
+
+      -- Always dim the background safely using our updated function
+      dim( button )
 
       button:SetScript( "OnClick", candidate.confirm_fn )
 
