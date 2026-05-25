@@ -86,11 +86,10 @@ function M.new( db, event_bus )
         roll_type = { MainSpec = 1, OffSpec = 1, Transmog = 1, SoftRes = 1, RR = 1, NA = 1 }
       }
     end
-	-- Data Migration for existing users who already had an old profile saved
+    -- Migration: add NA key for existing saved data that predates this fix
     if db.award_filter and db.award_filter.roll_type and db.award_filter.roll_type.NA == nil then
       db.award_filter.roll_type.NA = 1
     end
-
     m.classic = db.classic_look
   end
 
