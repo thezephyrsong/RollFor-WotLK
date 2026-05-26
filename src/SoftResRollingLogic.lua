@@ -174,20 +174,19 @@ function M.new(
     on_rolling_finished( item, item_count, winner_rolls )
   end
 
-	---@param roller Player
- 	---@param roll number
- 	---@param min number
-  	---@param max number
+  ---@param roller Player
+  ---@param roll number
+  ---@param min number
+  ---@param max number
   local function on_roll( roller, roll, min, max )
     if not rolling then return end
 
-    -- Catch out-of-bounds parameters safely so the event processing block doesn't freeze
     if min ~= 1 then
       local player = find_player( roller.name )
       local class = player and player.class or roller.class
       chat.info( string.format( "Ignored invalid roll from %s (Expected min 1, got %s).", roller.name, min ) )
       controller.roll_was_ignored( roller.name, class, roll_type, roll, "Invalid roll boundaries." )
-      return 
+      return
     end
 
     local player = find_player( roller.name )

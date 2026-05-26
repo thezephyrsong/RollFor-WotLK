@@ -16,7 +16,6 @@ local vertical_padding = 5
 local mod, getn = m.mod, m.getn
 
 local function highlight( frame )
-  -- Use the player's class color, or fallback to white if color is nil
   local color = frame.color or { r = 1, g = 1, b = 1 }
   frame:SetBackdropColor( color.r, color.g, color.b, 0.3 )
 end
@@ -26,7 +25,6 @@ local function dim( frame )
 end
 
 local function press( frame )
-  -- Use the player's class color, or fallback to white if color is nil
   local color = frame.color or { r = 1, g = 1, b = 1 }
   frame:SetBackdropColor( color.r, color.g, color.b, 0.7 )
 end
@@ -176,7 +174,7 @@ function M.new( frame_builder, config )
     m_frame:SetHeight( (button_height + vertical_padding) * total_rows + vertical_padding + vertical_margin * 2 )
   end
 
----@param candidates MasterLootCandidate[]
+  ---@param candidates MasterLootCandidate[]
   local function create_candidate_frames( candidates )
     local total = getn( candidates )
     local rows = config.master_loot_frame_rows()
@@ -197,21 +195,17 @@ function M.new( frame_builder, config )
 
       local button = m_buttons[ i ]
       button.text:SetText( candidate.name )
-      
-      -- Guard against candidate.class being nil/unrecognized safely
-      local class_str = candidate.class and string.upper( candidate.class ) or "UNKNOWN"
-      local color = m.api.RAID_CLASS_COLORS[ class_str ]
-      button.color = color
+      local color = m.api.RAID_CLASS_COLORS[ string.upper( candidate.class or "" ) ]
+      button.color = color  -- may be nil; highlight/press use inline fallback
       button.player = candidate
 
       if color then
         button.text:SetTextColor( color.r, color.g, color.b )
+        dim( button )
       else
-        button.text:SetTextColor( 1, 1, 1 ) -- White fallback text for unknown classes
+        button.text:SetTextColor( 1, 1, 1 )
+        dim( button )
       end
-
-      -- Always dim the background safely using our updated function
-      dim( button )
 
       button:SetScript( "OnClick", candidate.confirm_fn )
 
