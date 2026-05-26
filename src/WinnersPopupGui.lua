@@ -136,7 +136,7 @@ function M.winner( parent )
   roll_type:SetPoint( "RIGHT", 0, 0 )
   roll_type:SetHeight( 14 )
   roll_type:EnableMouse()
-  roll_type:SetScript( "onMouseUp", function( self, button )
+  roll_type:SetScript( "OnMouseUp", function( self, button )
     if button == "RightButton" then
       if M.roll_type_dropdown_frame and M.roll_type_dropdown_frame:IsVisible() then
         M.roll_type_dropdown_frame:Hide()
