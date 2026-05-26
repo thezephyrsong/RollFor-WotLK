@@ -350,7 +350,7 @@ local function is_rolling_check( f )
       return
     end
 
-    f( unpack( arg ) )
+    f( ... )
   end
 end
 
