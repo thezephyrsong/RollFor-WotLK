@@ -47,11 +47,11 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
   local function create_popup()
     M.debug.add( "Create popup" )
 
-    local function notify()
-      if this:GetObjectType() == "CheckButton" then
-        config.notify_subscribers( this:GetParent().config, this:GetChecked() )
+    local function notify( value, input )
+      if input:GetObjectType() == "CheckButton" then
+        config.notify_subscribers( input:GetParent().config, input:GetChecked() )
       else
-        config.notify_subscribers( this:GetParent().config )
+        config.notify_subscribers( input:GetParent().config )
       end
     end
 
@@ -77,16 +77,16 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
 
     local help_btn = m.GuiElements.tiny_button( frame, "?", "Click this icon and then hover over a field for more information.", "#E6CC40" )
     help_btn:SetPoint( "RIGHT", title_bar.close_btn, "LEFT", m.classic and -4 or -5, 0 )
-    help_btn:SetScript( "OnClick", function()
-      this.active = not this.active
+    help_btn:SetScript( "OnClick", function( self )
+      self.active = not self.active
       if m.classic then
-        if this.active then
-          this:LockHighlight()
+        if self.active then
+          self:LockHighlight()
         else
-          this:UnlockHighlight()
+          self:UnlockHighlight()
         end
       end
-      this:GetParent().show_help = this.active
+      self:GetParent().show_help = self.active
     end )
 
     frames.tab_area = m.api.CreateFrame( "Frame", "area", frame )
@@ -95,54 +95,54 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
     frames.tab_area.config_db = config_db
     e.create_backdrop( frames.tab_area )
 
-    e.create_gui_entry( "About", frames, function()
-      this.title = this:CreateFontString( "Status", "LOW", "GameFontWhite" )
-      this.title:SetFont( "FONTS\\FRIZQT__.TTF", 18 )
-      this.title:SetPoint( "TOPLEFT", 0, -20 )
-      this.title:SetPoint( "RIGHT", this.parent, "RIGHT", 0, 0 )
-      this.title:SetJustifyH( "CENTER" )
-      this.title:SetText( blue( "RollFor" ) )
+    e.create_gui_entry( "About", frames, function( parent )
+      parent.title = parent:CreateFontString( "Status", "LOW", "GameFontWhite" )
+      parent.title:SetFont( "FONTS\\FRIZQT__.TTF", 18 )
+      parent.title:SetPoint( "TOPLEFT", 0, -20 )
+      parent.title:SetPoint( "RIGHT", parent.parent, "RIGHT", 0, 0 )
+      parent.title:SetJustifyH( "CENTER" )
+      parent.title:SetText( blue( "RollFor" ) )
 
-      this.versionc = this:CreateFontString( "Status", "LOW", "GameFontWhite" )
-      this.versionc:SetPoint( "TOPLEFT", 140, -50 )
-      this.versionc:SetWidth( 100 )
-      this.versionc:SetJustifyH( "LEFT" )
-      this.versionc:SetText( "Version:" )
+      parent.versionc = parent:CreateFontString( "Status", "LOW", "GameFontWhite" )
+      parent.versionc:SetPoint( "TOPLEFT", 140, -50 )
+      parent.versionc:SetWidth( 100 )
+      parent.versionc:SetJustifyH( "LEFT" )
+      parent.versionc:SetText( "Version:" )
 
-      this.version = this:CreateFontString( "Status", "LOW", "GameFontWhite" )
-      this.version:SetPoint( "TOPRIGHT", 240, -50 )
-      this.version:SetWidth( 100 )
-      this.version:SetJustifyH( "RIGHT" )
-      this.version:SetText( m.get_addon_version().str )
+      parent.version = parent:CreateFontString( "Status", "LOW", "GameFontWhite" )
+      parent.version:SetPoint( "TOPRIGHT", 240, -50 )
+      parent.version:SetWidth( 100 )
+      parent.version:SetJustifyH( "RIGHT" )
+      parent.version:SetText( m.get_addon_version().str )
 
       local new_version = version_broadcast.new_version_available()
       if new_version and m.is_new_version( m.get_addon_version().str, new_version ) then
-        this.newversion = this:CreateFontString( "Status", "LOW", "GameFontWhite" )
-        this.newversion:SetPoint( "TOPLEFT", 0, -70 )
-        this.newversion:SetPoint( "RIGHT", this.parent, "RIGHT", 0, 0 )
-        this.newversion:SetJustifyH( "CENTER" )
-        this.newversion:SetText( string.format( "New version (%s) is available!", m.colors.highlight( string.format( "v%s", new_version ) ) ) )
+        parent.newversion = parent:CreateFontString( "Status", "LOW", "GameFontWhite" )
+        parent.newversion:SetPoint( "TOPLEFT", 0, -70 )
+        parent.newversion:SetPoint( "RIGHT", parent.parent, "RIGHT", 0, 0 )
+        parent.newversion:SetJustifyH( "CENTER" )
+        parent.newversion:SetText( string.format( "New version (%s) is available!", m.colors.highlight( string.format( "v%s", new_version ) ) ) )
       end
 
-      this.info = this:CreateFontString( "Status", "LOW", "GameFontWhite" )
-      this.info:SetPoint( "TOPLEFT", 0, -90 )
-      this.info:SetPoint( "RIGHT", this.parent, "RIGHT", 0, 0 )
-      this.info:SetJustifyH( "CENTER" )
-      this.info:SetText( "Check the minimap icon for new commands.\n\nBe a responsible Master Looter.\n\nHappy rolling! o7" )
+      parent.info = parent:CreateFontString( "Status", "LOW", "GameFontWhite" )
+      parent.info:SetPoint( "TOPLEFT", 0, -90 )
+      parent.info:SetPoint( "RIGHT", parent.parent, "RIGHT", 0, 0 )
+      parent.info:SetJustifyH( "CENTER" )
+      parent.info:SetText( "Check the minimap icon for new commands.\n\nBe a responsible Master Looter.\n\nHappy rolling! o7" )
 
-      this.changelog_title = this:CreateFontString( "Status", "LOW", "GameFontWhite" )
-      this.changelog_title:SetPoint( "TOPLEFT", 8, -169 )
-      this.changelog_title:SetPoint( "RIGHT", this.parent, "RIGHT", 0, 0 )
-      this.changelog_title:SetJustifyH( "LEFT" )
-      this.changelog_title:SetText( "Changelog:" )
+      parent.changelog_title = parent:CreateFontString( "Status", "LOW", "GameFontWhite" )
+      parent.changelog_title:SetPoint( "TOPLEFT", 8, -169 )
+      parent.changelog_title:SetPoint( "RIGHT", parent.parent, "RIGHT", 0, 0 )
+      parent.changelog_title:SetJustifyH( "LEFT" )
+      parent.changelog_title:SetText( "Changelog:" )
 
-      this.changelog = e.create_scroll_frame( this.parent )
-      e.create_backdrop( this.changelog, 3 )
-      this.changelog:SetPoint( "TOPLEFT", this.parent, "TOPLEFT", 10, -186 )
-      this.changelog:SetPoint( "BOTTOMRIGHT", this.parent, "BOTTOMRIGHT", -10, 10 )
+      parent.changelog = e.create_scroll_frame( parent.parent )
+      e.create_backdrop( parent.changelog, 3 )
+      parent.changelog:SetPoint( "TOPLEFT", parent.parent, "TOPLEFT", 10, -186 )
+      parent.changelog:SetPoint( "BOTTOMRIGHT", parent.parent, "BOTTOMRIGHT", -10, 10 )
 
-      this.changelog.content = e.create_scroll_child( this.changelog )
-      this.changelog.content.parent = this.changelog
+      parent.changelog.content = e.create_scroll_child( parent.changelog )
+      parent.changelog.content.parent = parent.changelog
 
       local changelog = {
         { ver = "4.8.1", text = "Add new MC bosses to boss list. Refactor keybindings" },
@@ -176,39 +176,39 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
       local last_ver
       for i, entry in ipairs( changelog ) do
         if last_ver ~= entry.ver then
-          local ver = this.changelog.content:CreateFontString( "Status", "LOW", "GameFontWhite" )
+          local ver = parent.changelog.content:CreateFontString( "Status", "LOW", "GameFontWhite" )
           ver:SetJustifyH( "LEFT" )
-          ver:SetPoint( "TOPLEFT", this.changelog.content, "TOPLEFT", 0, -(i - 1) * 14 )
+          ver:SetPoint( "TOPLEFT", parent.changelog.content, "TOPLEFT", 0, -(i - 1) * 14 )
           ver:SetText( entry.ver )
         end
 
-        local text = this.changelog.content:CreateFontString( "Status", "LOW", "GameFontWhite" )
+        local text = parent.changelog.content:CreateFontString( "Status", "LOW", "GameFontWhite" )
         text:SetJustifyH( "LEFT" )
-        text:SetPoint( "TOPLEFT", this.changelog.content, "TOPLEFT", 30, -(i - 1) * 14 )
-        text:SetPoint( "RIGHT", this.changelog.content, "LEFT", 350, 0 )
+        text:SetPoint( "TOPLEFT", parent.changelog.content, "TOPLEFT", 30, -(i - 1) * 14 )
+        text:SetPoint( "RIGHT", parent.changelog.content, "LEFT", 350, 0 )
         text:SetText( entry.text )
         last_ver = entry.ver
       end
     end )
 
-    e.create_gui_entry( "General", frames, function()
-      e.create_config( "General settings", nil, "header" )
-      e.create_config( "Classic look", "classic_look", "checkbox", "Toggle classic look. Requires /reload", function()
+    e.create_gui_entry( "General", frames, function( parent )
+      e.create_config( parent, "General settings", nil, "header" )
+      e.create_config( parent, "Classic look", "classic_look", "checkbox", "Toggle classic look. Requires /reload", function()
         event_bus.notify( "config_change_requires_ui_reload", { key = "classic_look" } )
       end )
-      e.create_config( "Master loot warning", "show_ml_warning", "checkbox", "Show a warning if no master looter is set when targeting a boss.", notify )
-      e.create_config( "Auto raid-roll", "auto_raid_roll", "checkbox", "Automatically do a raid-roll if no one rolls for an item.", notify )
-      e.create_config( "Auto group loot", "auto_group_loot", "checkbox", "Automatically sets loot mode back to group loot after boss is looted.", notify )
-      e.create_config( "Auto master loot", "auto_master_loot", "checkbox", "Automatically sets loot mode to master looter when a boss is targeted.", notify )
+      e.create_config( parent, "Master loot warning", "show_ml_warning", "checkbox", "Show a warning if no master looter is set when targeting a boss.", notify )
+      e.create_config( parent, "Auto raid-roll", "auto_raid_roll", "checkbox", "Automatically do a raid-roll if no one rolls for an item.", notify )
+      e.create_config( parent, "Auto group loot", "auto_group_loot", "checkbox", "Automatically sets loot mode back to group loot after boss is looted.", notify )
+      e.create_config( parent, "Auto master loot", "auto_master_loot", "checkbox", "Automatically sets loot mode to master looter when a boss is targeted.", notify )
 
-      e.create_config( "Minimap", "", "header" )
-      e.create_config( "Hide minimap icon", "minimap_button_hidden", "checkbox", nil, notify )
-      e.create_config( "Lock minimap icon", "minimap_button_locked", "checkbox", nil, notify )
+      e.create_config( parent, "Minimap", "", "header" )
+      e.create_config( parent, "Hide minimap icon", "minimap_button_hidden", "checkbox", nil, notify )
+      e.create_config( parent, "Lock minimap icon", "minimap_button_locked", "checkbox", nil, notify )
 
-      e.create_config( "Awards data", nil, "header" )
-      e.create_config( "Always keep awards data", "keep_award_data", "checkbox",
+      e.create_config( parent, "Awards data", nil, "header" )
+      e.create_config( parent, "Always keep awards data", "keep_award_data", "checkbox",
         "Stops the addon from clearing award data when you join a new group/raid and on disconnect." )
-      e.create_config( "Reset awards data", nil, "button", "Clears all the award data", function()
+      e.create_config( parent, "Reset awards data", nil, "button", "Clears all the award data", function()
         if confirm_popup.is_visible() then
           confirm_popup.hide()
           return
@@ -222,151 +222,151 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
       end )
     end )
 
-    e.create_gui_entry( "Looting", frames, function()
-      e.create_config( "Loot settings", nil, "header" )
-      e.create_config( "Master loot frame rows", "master_loot_frame_rows", "number|min=5|max=20", "Value must be between 5 and 20 rows.", notify )
-      e.create_config( "Auto-loot", "auto_loot", "checkbox", "Auto-loot items below loot thresold. BoP items will not be auto looted." )
-      e.create_config( "Auto-loot coins with SuperWow", "superwow_auto_loot_coins", "checkbox", "Automatically loot coins (requires SuperWow mod)." )
-      e.create_config( "Auto-loot messages", "auto_loot_messages", "checkbox", "Display auto-looted items in your private chat." )
-      e.create_config( "Announce auto-looted items", "auto_loot_announce", "checkbox", "Announce auto-looted items above loot quality threshold to party/raid." )
-      e.create_config( "Announce SR status when item drops", "announce_sr_on_loot", "checkbox", "Announce whether each dropped item is Soft-Ressed (or not) when the loot window opens." )
+    e.create_gui_entry( "Looting", frames, function( parent )
+      e.create_config( parent, "Loot settings", nil, "header" )
+      e.create_config( parent, "Master loot frame rows", "master_loot_frame_rows", "number|min=5|max=20", "Value must be between 5 and 20 rows.", notify )
+      e.create_config( parent, "Auto-loot", "auto_loot", "checkbox", "Auto-loot items below loot thresold. BoP items will not be auto looted." )
+      e.create_config( parent, "Auto-loot coins with SuperWow", "superwow_auto_loot_coins", "checkbox", "Automatically loot coins (requires SuperWow mod)." )
+      e.create_config( parent, "Auto-loot messages", "auto_loot_messages", "checkbox", "Display auto-looted items in your private chat." )
+      e.create_config( parent, "Announce auto-looted items", "auto_loot_announce", "checkbox", "Announce auto-looted items above loot quality threshold to party/raid." )
+      e.create_config( parent, "Announce SR status when item drops", "announce_sr_on_loot", "checkbox", "Announce whether each dropped item is Soft-Ressed (or not) when the loot window opens." )
 
-      e.create_config( "Quick award", nil, "header" )
-      this.enable_quick_award_shift = e.create_config( "Enable quick award to self", "enable_quick_award_shift", "checkbox",
+      e.create_config( parent, "Quick award", nil, "header" )
+      parent.enable_quick_award_shift = e.create_config( parent, "Enable quick award to self", "enable_quick_award_shift", "checkbox",
         "Enable quick award to self when shift-clicking on \"...\" button.",
-        function( value )
+        function( value, input )
           if value or config_db[ "enable_quick_award_ctrl" ] then
-            this:GetParent():GetParent().disable_quick_award_confirm.input.enable()
+            input:GetParent():GetParent().disable_quick_award_confirm.input.enable()
             if config_db[ "disable_quick_award_confirm" ] then
-              this:GetParent():GetParent().disable_quick_award_confirm_bop.input.enable()
+              input:GetParent():GetParent().disable_quick_award_confirm_bop.input.enable()
             end
           else
-            this:GetParent():GetParent().disable_quick_award_confirm.input.disable()
+            input:GetParent():GetParent().disable_quick_award_confirm.input.disable()
             if not config_db[ "disable_quick_award_confirm" ] or not config_db[ "enable_quick_award_ctrl" ] then
-              this:GetParent():GetParent().disable_quick_award_confirm_bop.input.disable()
+              input:GetParent():GetParent().disable_quick_award_confirm_bop.input.disable()
             end
           end
         end )
 
-      this.enable_quick_award_ctrl = e.create_config( "Enable quick award to selected player", "enable_quick_award_ctrl", "checkbox",
-        "Enable quick award to selected player when ctrl-clicking on \"...\" button.", function( value )
+      parent.enable_quick_award_ctrl = e.create_config( parent, "Enable quick award to selected player", "enable_quick_award_ctrl", "checkbox",
+        "Enable quick award to selected player when ctrl-clicking on \"...\" button.", function( value, input )
           if value then
-            this:GetParent():GetParent().disable_quick_award_confirm.input.enable()
-            this:GetParent():GetParent().quick_award_ctrl.input.enable()
+            input:GetParent():GetParent().disable_quick_award_confirm.input.enable()
+            input:GetParent():GetParent().quick_award_ctrl.input.enable()
             if config_db[ "disable_quick_award_confirm" ] then
-              this:GetParent():GetParent().disable_quick_award_confirm_bop.input.enable()
+              input:GetParent():GetParent().disable_quick_award_confirm_bop.input.enable()
             end
           else
-            this:GetParent():GetParent().quick_award_ctrl.input.disable()
+            input:GetParent():GetParent().quick_award_ctrl.input.disable()
             if not config_db[ "enable_quick_award_shift" ] then
-              this:GetParent():GetParent().disable_quick_award_confirm.input.disable()
+              input:GetParent():GetParent().disable_quick_award_confirm.input.disable()
             end
             if not config_db[ "disable_quick_award_confirm" ] or not config_db[ "enable_quick_award_shift" ] then
-              this:GetParent():GetParent().disable_quick_award_confirm_bop.input.disable()
+              input:GetParent():GetParent().disable_quick_award_confirm_bop.input.disable()
             end
           end
         end )
 
-      this.quick_award_ctrl = e.create_config( "Award Ctrl-click to the following player", "quick_award_ctrl", "text|width=70",
-        "Specify which player should receive loot when ctrl-clicking \"...\" button.", function( value )
-          if this.disabled then return end
+      parent.quick_award_ctrl = e.create_config( parent, "Award Ctrl-click to the following player", "quick_award_ctrl", "text|width=70",
+        "Specify which player should receive loot when ctrl-clicking \"...\" button.", function( value, input )
+          if input.disabled then return end
           if group_roster.is_player_in_my_group( value ) then
-            this:SetTextColor( 0.1254, 0.6235, 0.9764, 1 )
+            input:SetTextColor( 0.1254, 0.6235, 0.9764, 1 )
           else
-            this:SetTextColor( 1, .3, .3, 1 )
+            input:SetTextColor( 1, .3, .3, 1 )
           end
           config_db[ "quick_award_ctrl" ] = value
         end )
 
-      this.disable_quick_award_confirm = e.create_config( "Disable confirmation popup on quick award", "disable_quick_award_confirm", "checkbox",
-        "Disable confirmation popup when using ctrl/shift click to quick assign loot", function( value )
+      parent.disable_quick_award_confirm = e.create_config( parent, "Disable confirmation popup on quick award", "disable_quick_award_confirm", "checkbox",
+        "Disable confirmation popup when using ctrl/shift click to quick assign loot", function( value, input )
           if value then
-            this:GetParent():GetParent().disable_quick_award_confirm_bop.input.enable()
+            input:GetParent():GetParent().disable_quick_award_confirm_bop.input.enable()
           else
-            this:GetParent():GetParent().disable_quick_award_confirm_bop.input.disable()
+            input:GetParent():GetParent().disable_quick_award_confirm_bop.input.disable()
           end
         end )
-      this.disable_quick_award_confirm_bop = e.create_config( "Allow BoP items to be quick awarded without confirmation (|cffff0000CAUTION!|r)",
+      parent.disable_quick_award_confirm_bop = e.create_config( parent, "Allow BoP items to be quick awarded without confirmation (|cffff0000CAUTION!|r)",
         "disable_quick_award_confirm_bop", "checkbox", "Allow Bind on Pickup items to be quick awarded without confirmation popup. Not recommended!!" )
 
-      if not this.disable_quick_award_confirm.input:GetChecked() then
-        this.disable_quick_award_confirm_bop.input.disable()
+      if not parent.disable_quick_award_confirm.input:GetChecked() then
+        parent.disable_quick_award_confirm_bop.input.disable()
       end
 
-      if not this.enable_quick_award_ctrl.input:GetChecked() then
-        this.quick_award_ctrl.input.disable()
+      if not parent.enable_quick_award_ctrl.input:GetChecked() then
+        parent.quick_award_ctrl.input.disable()
       end
 
-      if not this.enable_quick_award_ctrl.input:GetChecked() and not this.enable_quick_award_shift.input:GetChecked() then
-        this.disable_quick_award_confirm.input.disable()
-        this.disable_quick_award_confirm_bop.input.disable()
+      if not parent.enable_quick_award_ctrl.input:GetChecked() and not parent.enable_quick_award_shift.input:GetChecked() then
+        parent.disable_quick_award_confirm.input.disable()
+        parent.disable_quick_award_confirm_bop.input.disable()
       end
 
-      e.create_config( "Loot window", nil, "header" )
-      e.create_config( "Enable loot window on mouse cursor", "loot_frame_cursor", "checkbox", "Display loot window at cursor when looting.", function()
+      e.create_config( parent, "Loot window", nil, "header" )
+      e.create_config( parent, "Enable loot window on mouse cursor", "loot_frame_cursor", "checkbox", "Display loot window at cursor when looting.", function()
         config.notify_subscribers( 'reset_loot_frame' )
       end )
-      e.create_config( "Reset loot frame position", nil, "button", nil, function()
+      e.create_config( parent, "Reset loot frame position", nil, "button", nil, function()
         info( "Loot frame position has been reset." )
         config.notify_subscribers( "reset_loot_frame" )
       end )
     end )
 
-    e.create_gui_entry( "Rolling", frames, function()
-      e.create_config( "Roll settings", nil, "header" )
-      e.create_config( "Default rolling time", "default_rolling_time_seconds", "number|min=4|max=15", "Value must be between 4 and 15 seconds." )
-      this.handle_plus_ones = e.create_config( "Handle +1's on MS rolls", "handle_plus_ones", "checkbox", nil, function( value )
+    e.create_gui_entry( "Rolling", frames, function( parent )
+      e.create_config( parent, "Roll settings", nil, "header" )
+      e.create_config( parent, "Default rolling time", "default_rolling_time_seconds", "number|min=4|max=15", "Value must be between 4 and 15 seconds." )
+      parent.handle_plus_ones = e.create_config( parent, "Handle +1's on MS rolls", "handle_plus_ones", "checkbox", nil, function( value, input )
         if value then
-          this:GetParent():GetParent().plus_one_prompt.input.enable()
+          input:GetParent():GetParent().plus_one_prompt.input.enable()
         else
-          this:GetParent():GetParent().plus_one_prompt.input.disable()
+          input:GetParent():GetParent().plus_one_prompt.input.disable()
         end
       end )
-      this.plus_one_prompt = e.create_config("Always prompt for +1's", "plus_one_prompt", "checkbox" )
-      if not this.handle_plus_ones.input:GetChecked() then
-        this.plus_one_prompt.input.disable()
+      parent.plus_one_prompt = e.create_config( parent, "Always prompt for +1's", "plus_one_prompt", "checkbox" )
+      if not parent.handle_plus_ones.input:GetChecked() then
+        parent.plus_one_prompt.input.disable()
       end
-      e.create_config( "Rolling popup lock", "rolling_popup_lock", "checkbox", "Locks the rolling popup position.", notify )
-      e.create_config( "Show Raid roll again button", "raid_roll_again", "checkbox", nil, notify )
-      e.create_config( "Show Open Roll button", "show_open_roll_button", "checkbox", "Show the Open Roll button in the rolling popup for SR items.", notify )
-      e.create_config( "Show player roles", "show_player_roles", "checkbox", "Show player roles in rolling popup" )
-      e.create_config( "MainSpec rolling threshold", "ms_roll_threshold", "number" )
-      e.create_config( "OffSpec rolling threshold", "os_roll_threshold", "number" )
-      this.tmog_rolling_enabled = e.create_config( "Enable transmog rolling", "tmog_rolling_enabled", "checkbox", nil, function( value )
+      e.create_config( parent, "Rolling popup lock", "rolling_popup_lock", "checkbox", "Locks the rolling popup position.", notify )
+      e.create_config( parent, "Show Raid roll again button", "raid_roll_again", "checkbox", nil, notify )
+      e.create_config( parent, "Show Open Roll button", "show_open_roll_button", "checkbox", "Show the Open Roll button in the rolling popup for SR items.", notify )
+      e.create_config( parent, "Show player roles", "show_player_roles", "checkbox", "Show player roles in rolling popup" )
+      e.create_config( parent, "MainSpec rolling threshold", "ms_roll_threshold", "number" )
+      e.create_config( parent, "OffSpec rolling threshold", "os_roll_threshold", "number" )
+      parent.tmog_rolling_enabled = e.create_config( parent, "Enable transmog rolling", "tmog_rolling_enabled", "checkbox", nil, function( value, input )
         if value then
-          this:GetParent():GetParent().tmog_roll_threshold.input.enable()
-          this:GetParent():GetParent().auto_tmog.input.enable()
+          input:GetParent():GetParent().tmog_roll_threshold.input.enable()
+          input:GetParent():GetParent().auto_tmog.input.enable()
         else
-          this:GetParent():GetParent().tmog_roll_threshold.input.disable()
-          this:GetParent():GetParent().auto_tmog.input.disable()
+          input:GetParent():GetParent().tmog_roll_threshold.input.disable()
+          input:GetParent():GetParent().auto_tmog.input.disable()
         end
       end )
-      this.tmog_roll_threshold = e.create_config( "Transmog rolling threshold", "tmog_roll_threshold", "number" )
-      this.auto_tmog = e.create_config( "Disable transmog roll on trash loot", "auto_tmog", "checkbox", "Automatically disable tmog roll on trash loot." )
+      parent.tmog_roll_threshold = e.create_config( parent, "Transmog rolling threshold", "tmog_roll_threshold", "number" )
+      parent.auto_tmog = e.create_config( parent, "Disable transmog roll on trash loot", "auto_tmog", "checkbox", "Automatically disable tmog roll on trash loot." )
 
-      if not this.tmog_rolling_enabled.input:GetChecked() then
-        this.tmog_roll_threshold.input.disable()
-        this.auto_tmog.input.disable()
+      if not parent.tmog_rolling_enabled.input:GetChecked() then
+        parent.tmog_roll_threshold.input.disable()
+        parent.auto_tmog.input.disable()
       end
 
-      e.create_config( "Announce class restriction on items", "auto_class_announce", "checkbox",
+      e.create_config( parent, "Announce class restriction on items", "auto_class_announce", "checkbox",
         "Roll message will display classes that can roll on items with class restrictions." )
-      e.create_config( "Reset rolling popup position", "", "button", nil, function()
+      e.create_config( parent, "Reset rolling popup position", "", "button", nil, function()
         info( "Rolling popup position has been reset." )
         config.notify_subscribers( "reset_rolling_popup" )
       end )
     end )
 
-    e.create_gui_entry( "Client", frames, function()
-      e.create_config( "Client settings", nil, "header" )
-      e.create_config( "Show roll popup", "client_show_roll_popup", "dropdown", "Select when to show the roll popup.", nil, {
+    e.create_gui_entry( "Client", frames, function( parent )
+      e.create_config( parent, "Client settings", nil, "header" )
+      e.create_config( parent, "Show roll popup", "client_show_roll_popup", "dropdown", "Select when to show the roll popup.", nil, {
         { text = "Off",      value = "Off" },
         { text = "Always",   value = "Always" },
         { text = "Eligible", value = "Eligible" }
       } )
-      e.create_config( "Auto roll on SR items", "client_auto_roll_sr", "checkbox", "Automatically roll on SR items." )
-      e.create_config( "Hide popup when rolling is complete", "client_auto_hide_popup", "checkbox", "Automatically hide roll popup when rolling is completed." )
-      --      e.create_config( "Track awarded items", "client_track_awards", "checkbox", "Will track all awarded items so you can view them in winners popup." )
+      e.create_config( parent, "Auto roll on SR items", "client_auto_roll_sr", "checkbox", "Automatically roll on SR items." )
+      e.create_config( parent, "Hide popup when rolling is complete", "client_auto_hide_popup", "checkbox", "Automatically hide roll popup when rolling is completed." )
+      --      e.create_config( parent, "Track awarded items", "client_track_awards", "checkbox", "Will track all the award data so you can view them in winners popup." )
     end )
 
     return frame
