@@ -755,8 +755,28 @@ function M.new(
       ml_confirmation_data = nil
       loot_award_popup.hide()
     end
-    notify_subscribers( "loot_awarded", { player_name = player_name, player_class = player_class, item_id = item_id, item_link = item_link } )
+    -- Extract roll details for this specific winner so ClientBroadcast can
+    -- include them in the AWARDED packet for non-ML raid members.
     local data, current_iteration = roll_tracker.get()
+    local roll_type_for_event = nil
+    local winning_roll_for_event = nil
+    local rolling_strategy_for_event = current_iteration and current_iteration.rolling_strategy or nil
+    if current_iteration then
+      local winner_roll = m.find( player_name, current_iteration.rolls, 'player_name' )
+      if winner_roll then
+        roll_type_for_event = winner_roll.roll_type
+        winning_roll_for_event = winner_roll.roll
+      end
+    end
+    notify_subscribers( "loot_awarded", {
+      player_name = player_name,
+      player_class = player_class,
+      item_id = item_id,
+      item_link = item_link,
+      roll_type = roll_type_for_event,
+      winning_roll = winning_roll_for_event,
+      rolling_strategy = rolling_strategy_for_event
+    } )
     if data.status and data.status.type == S.Preview and data.item_count > 0 then
       rolling_popup_data[ item_id ] = nil
       preview( data.item, data.item_count )
