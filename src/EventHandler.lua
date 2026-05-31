@@ -98,9 +98,6 @@ function M.handle_events( main )
   frame:RegisterEvent( "CHAT_MSG_RAID_LEADER" )
   frame:RegisterEvent( "CHAT_MSG_WHISPER_INFORM" )
   frame:RegisterEvent( "CHAT_MSG_WHISPER" )
-  -- OPEN_MASTER_LOOT_LIST fires when master looter right-clicks a loot slot.
-  -- Wrap in pcall as some 3.3.5a private server builds may not expose this event.
-  pcall( function() frame:RegisterEvent( "OPEN_MASTER_LOOT_LIST" ) end )
   frame:RegisterEvent( "TRADE_SHOW" )
   frame:RegisterEvent( "TRADE_PLAYER_ITEM_CHANGED" )
   frame:RegisterEvent( "TRADE_TARGET_ITEM_CHANGED" )

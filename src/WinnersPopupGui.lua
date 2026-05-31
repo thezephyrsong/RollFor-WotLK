@@ -71,7 +71,7 @@ function M.headers( parent, on_click )
   return frame
 end
 
-function M.roll_type_dropdown()
+function M.roll_type_dropdown( frame )
   if not M.roll_type_dropdown_frame then
     local items_data = {}
     for roll_type in pairs( m.Types.RollType ) do
@@ -80,13 +80,13 @@ function M.roll_type_dropdown()
     M.roll_type_dropdown_frame = m.GuiElements.dropdown( nil, nil, items_data )
   end
 
-  local row = this:GetParent()
+  local row = frame:GetParent()
   M.roll_type_dropdown_frame:SetPoint( "TOPLEFT", row, "BOTTOMLEFT", row:GetWidth() - 27, 0 )
   M.roll_type_dropdown_frame:Show()
 
-  local on_update_item = this.inner.on_update_item
+  local on_update_item = frame.inner.on_update_item
   for _, cb in ipairs( M.roll_type_dropdown_frame.items ) do
-    cb.checkbox:SetChecked( cb.value == this.inner.value )
+    cb.checkbox:SetChecked( cb.value == frame.inner.value )
 
     cb.on_select = function( setting, value )
       if not value then setting = "NA" end
@@ -136,12 +136,12 @@ function M.winner( parent )
   roll_type:SetPoint( "RIGHT", 0, 0 )
   roll_type:SetHeight( 14 )
   roll_type:EnableMouse()
-  roll_type:SetScript( "onMouseUp", function()
-    if arg1 == "RightButton" then
+  roll_type:SetScript( "OnMouseUp", function( self, button )
+    if button == "RightButton" then
       if M.roll_type_dropdown_frame and M.roll_type_dropdown_frame:IsVisible() then
         M.roll_type_dropdown_frame:Hide()
       else
-        M.roll_type_dropdown()
+        M.roll_type_dropdown( self )
       end
     end
   end )
@@ -223,8 +223,8 @@ function M.create_scroll_frame( parent, name )
     thumb:SetWidth( 12 )
     thumb:SetHeight( 10 )
 
-    for i, button in { _G[ name .. "ScrollBarScrollUpButton" ], _G[ name .. "ScrollBarScrollDownButton" ] } do
-      for _, tex in { "Normal", "Highlight", "Pushed", "Disabled" } do
+    for i, button in ipairs({ _G[ name .. "ScrollBarScrollUpButton" ], _G[ name .. "ScrollBarScrollDownButton" ] }) do
+      for _, tex in ipairs({ "Normal", "Highlight", "Pushed", "Disabled" }) do
         local texture = button[ "Get" .. tex .. "Texture" ]( button )
         texture:SetTexture( "Interface\\AddOns\\RollFor-WotLK\\assets\\arrow-" .. (i == 1 and "up" or "down") .. ".tga" )
         texture:SetTexCoord( 0, 1, 0, 1 )
@@ -254,11 +254,11 @@ function M.create_scroll_frame( parent, name )
         button:SetPoint( "TOP", scroll_bar, "BOTTOM", 0, -2 )
       end
 
-      button:SetScript( "OnEnter", function()
-        this:SetBackdropBorderColor( .125, .624, .976, .5 )
+      button:SetScript( "OnEnter", function( self )
+        self:SetBackdropBorderColor( .125, .624, .976, .5 )
       end )
-      button:SetScript( "OnLeave", function()
-        this:SetBackdropBorderColor( .2, .2, .2, 1 )
+      button:SetScript( "OnLeave", function( self )
+        self:SetBackdropBorderColor( .2, .2, .2, 1 )
       end )
     end
   end

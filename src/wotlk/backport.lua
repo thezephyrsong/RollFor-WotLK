@@ -14,6 +14,6 @@ function IsInGroup() return IsInParty() or IsInRaid() end
 
 -- LOOT_SLOT_* constants and GetLootSlotType() exist natively in WotLK — no shim needed.
 
--- UnitIsGroupLeader was renamed to UnitIsGroupLeader in WotLK with the same signature.
--- UnitIsPartyLeader still exists as an alias, but the canonical name works directly.
--- No shim needed.
+-- WotLK 3.3.5a has UnitIsPartyLeader but NOT UnitIsGroupLeader.
+-- UnitIsGroupLeader was added in a later expansion (Cataclysm+).
+-- No shim needed — PlayerInfo.lua handles the fallback manually.
