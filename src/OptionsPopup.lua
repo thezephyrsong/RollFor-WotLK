@@ -145,6 +145,7 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
       this.changelog.content.parent = this.changelog
 
       local changelog = {
+    { ver = "1.1.7", text = "Add guards for nil checks and unknown roll types" },      
     { ver = "1.1.6", text = "Loot tracking overhaul. Integrated 'awarded_loot' data into the broadcasts and RollController packets to capture and track comprehensive roll context, including item links, winning rolls, roll types, and rolling strategies." },
     { ver = "1.1.5", text = "Compatibility and maintenance release. Fixed numerous WotLK 3.3.5a API and Lua 5.1 compatibility issues (including 'this'/'arg1' replacements, unpack variations, and GetLootMethod arity). Cleaned up dead event registrations, scoped global math mutations, and corrected UI casing typos." },
     { ver = "1.1.4", text = "Hardening release. Added defensive boundary checks to prevent UI crashes if target data returns nil." },
