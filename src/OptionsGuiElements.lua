@@ -53,28 +53,27 @@ function M.create_gui_entry( title, frames, populate )
   end
 end
 
-function M.entry_update( self )
-  if m.vanilla then self = this end
+function M.entry_update()
   local focus = m.api.GetMouseFocus()
   if (focus and focus.value) then
     return
   end
 
-  if m.api.MouseIsOver( self ) and not self.over then
-    self.tex:Show()
-    self.over = true
-    if self:GetParent():GetParent():GetParent():GetParent():GetParent().show_help then
-      if self.tooltip then
-        self:GetParent().tooltip = self
-        m.api.GameTooltip:SetOwner( self, "ANCHOR_TOPLEFT" )
-        m.api.GameTooltip:SetText( self.tooltip )
+  if m.api.MouseIsOver( this ) and not this.over then
+    this.tex:Show()
+    this.over = true
+    if this:GetParent():GetParent():GetParent():GetParent():GetParent().show_help then
+      if this.tooltip then
+        this:GetParent().tooltip = this
+        m.api.GameTooltip:SetOwner( this, "ANCHOR_TOPLEFT" )
+        m.api.GameTooltip:SetText( this.tooltip )
         m.api.GameTooltip:Show()
       end
     end
-  elseif not m.api.MouseIsOver( self ) and self.over then
-    self.tex:Hide()
-    self.over = nil
-    if m.api.GameTooltip:IsShown() and self:GetParent().tooltip == self then
+  elseif not m.api.MouseIsOver( this ) and this.over then
+    this.tex:Hide()
+    this.over = nil
+    if m.api.GameTooltip:IsShown() and this:GetParent().tooltip == this then
       m.api.GameTooltip:Hide()
     end
   end
@@ -140,10 +139,10 @@ function M.create_scroll_frame( parent, name )
   f.slider.thumb:SetHeight( 50 )
   f.slider.thumb:SetTexture( .125, .624, .976, .5 )
 
-  f.slider:SetScript( "OnValueChanged", function( self )
+  f.slider:SetScript( "OnValueChanged", function()
     if is_updating then return end
     is_updating = true
-    f:SetVerticalScroll( self:GetValue() )
+    f:SetVerticalScroll( this:GetValue() )
     -- update thumb size but do NOT call update_scroll_state (avoids re-entry)
     local scroll_range = f:GetVerticalScrollRange()
     local v = f:GetHeight()
@@ -211,8 +210,8 @@ function M.create_scroll_frame( parent, name )
   end
 
   f:EnableMouseWheel( 1 )
-  f:SetScript( "OnMouseWheel", function( self, delta )
-    self:scroll( delta * 10 )
+  f:SetScript( "OnMouseWheel", function()
+    this:scroll( arg1 * 10 )
   end )
 
   return f
@@ -228,8 +227,8 @@ function M.create_scroll_child( parent, name )
 
   parent:SetScrollChild( f )
 
-  f:SetScript( "OnUpdate", function( self )
-    self:GetParent():update_scroll_state()
+  f:SetScript( "OnUpdate", function()
+    this:GetParent():update_scroll_state()
   end )
 
   return f
@@ -243,16 +242,16 @@ function M.create_tab_frame( parent, title )
   f:SetPoint( "BOTTOMRIGHT", parent.tab_area, "TOPLEFT", (parent.tab_area.count + 1) * 65, -20 )
   f.parent = parent
 
-  f:SetScript( "OnClick", function( self )
-    if self.area:IsShown() then
+  f:SetScript( "OnClick", function()
+    if this.area:IsShown() then
       return
     else
-      for id, name in pairs( self.parent ) do
+      for id, name in pairs( this.parent ) do
         if type( name ) == "table" and name.area and id ~= "parent" then
           name.area:Hide()
         end
       end
-      self.area:Show()
+      this.area:Show()
     end
   end )
 
@@ -279,17 +278,17 @@ function M.create_area( parent, title, func )
   f.bg:SetTexture( 1, 1, 1, .05 )
   f.bg:SetAllPoints()
 
-  f:SetScript( "OnShow", function( self )
+  f:SetScript( "OnShow", function()
     parent.active_area = title
-    self.indexed = true
-    self.button.text:SetTextColor( 0.1254, 0.6235, 0.9764, 1 )
-    self.button.bg:SetTexture( 1, 1, 1, 1 )
-    self.button.bg:SetGradientAlpha( "VERTICAL", 1, 1, 1, .05, 0, 0, 0, 0 )
+    this.indexed = true
+    this.button.text:SetTextColor( 0.1254, 0.6235, 0.9764, 1 )
+    this.button.bg:SetTexture( 1, 1, 1, 1 )
+    this.button.bg:SetGradientAlpha( "VERTICAL", 1, 1, 1, .05, 0, 0, 0, 0 )
   end )
 
-  f:SetScript( "OnHide", function( self )
-    self.button.text:SetTextColor( 1, 1, 1, 1 )
-    self.button.bg:SetTexture( 0, 0, 0, 0 )
+  f:SetScript( "OnHide", function()
+    this.button.text:SetTextColor( 1, 1, 1, 1 )
+    this.button.bg:SetTexture( 0, 0, 0, 0 )
   end )
 
   if func then
@@ -299,11 +298,11 @@ function M.create_area( parent, title, func )
     ---@class ChildFrame
     f.scroll.content = M.create_scroll_child( f.scroll )
     f.scroll.content.parent = f.scroll
-    f.scroll.content:SetScript( "OnShow", function( self )
-      self.parent:UpdateScrollChildRect()
-      if not self.setup then
-        func( self )
-        self.setup = true
+    f.scroll.content:SetScript( "OnShow", function()
+      this.parent:UpdateScrollChildRect()
+      if not this.setup then
+        func()
+        this.setup = true
       end
     end )
   end
@@ -311,7 +310,7 @@ function M.create_area( parent, title, func )
   return f
 end
 
-function M.create_config( parent, caption, setting, widget, tooltip, ufunc, options )
+function M.create_config( caption, setting, widget, tooltip, ufunc, options )
   local function parse_options()
     local w = string.sub( widget, 1, (string.find( widget, "|", nil, true ) or 0) - 1 )
     local opt = {}
@@ -322,13 +321,13 @@ function M.create_config( parent, caption, setting, widget, tooltip, ufunc, opti
     return w, opt
   end
 
-  parent.object_count = parent.object_count == nil and 0 or parent.object_count + 1
+  this.object_count = this.object_count == nil and 0 or this.object_count + 1
 
-  local config_db = parent:GetParent():GetParent():GetParent().config_db
-  local frame = m.api.CreateFrame( "Frame", nil, parent )
-  frame:SetWidth( parent:GetParent():GetWidth() - 22 )
+  local config_db = this:GetParent():GetParent():GetParent().config_db
+  local frame = m.api.CreateFrame( "Frame", nil, this )
+  frame:SetWidth( this:GetParent():GetWidth() - 22 )
   frame:SetHeight( 22 )
-  frame:SetPoint( "TOPLEFT", parent, "TOPLEFT", 5, (parent.object_count * -23) - 5 )
+  frame:SetPoint( "TOPLEFT", this, "TOPLEFT", 5, (this.object_count * -23) - 5 )
   frame.config = setting
   frame.tooltip = tooltip
 
@@ -353,12 +352,12 @@ function M.create_config( parent, caption, setting, widget, tooltip, ufunc, opti
 
   if widget == "header" then
     frame:SetBackdrop( nil )
-    if not parent.first_header then
-      parent.first_header = true
+    if not this.first_header then
+      this.first_header = true
       frame:SetHeight( 20 )
     else
       frame:SetHeight( 40 )
-      parent.object_count = parent.object_count + 1
+      this.object_count = this.object_count + 1
     end
     frame.caption:SetJustifyH( "LEFT" )
     frame.caption:SetJustifyV( "BOTTOM" )
@@ -379,8 +378,8 @@ function M.create_config( parent, caption, setting, widget, tooltip, ufunc, opti
       frame.input:SetFontObject( "GameFontNormal" )
       frame.input:SetAutoFocus( false )
       frame.input:SetText( config_db[ setting ] )
-      frame.input:SetScript( "OnEscapePressed", function( self )
-        self:ClearFocus()
+      frame.input:SetScript( "OnEscapePressed", function()
+        this:ClearFocus()
       end )
 
       frame.input.disable = function()
@@ -403,10 +402,10 @@ function M.create_config( parent, caption, setting, widget, tooltip, ufunc, opti
       frame.input:SetScript( "OnEditFocusGained", function()
         frame.input:HighlightText()
       end )
-      frame.input:SetScript( "OnTextChanged", function( self )
-        local v = self:GetText()
+      frame.input:SetScript( "OnTextChanged", function()
+        local v = this:GetText()
         if ufunc then
-          ufunc( v, self )
+          ufunc( v )
         else
           config_db[ setting ] = v
         end
@@ -414,18 +413,18 @@ function M.create_config( parent, caption, setting, widget, tooltip, ufunc, opti
     end
 
     if not widget or widget == "number" then
-      frame.input:SetScript( "OnTextChanged", function( self )
-        local v = tonumber( self:GetText() )
+      frame.input:SetScript( "OnTextChanged", function()
+        local v = tonumber( this:GetText() )
         local valid = v and ((not options.min or v >= options.min) and (not options.max or v <= options.max))
 
         if valid then
           if config_db[ setting ] ~= v then
             config_db[ setting ] = v
-            if ufunc then ufunc( v, self ) end
+            if ufunc then ufunc( v ) end
           end
-          self:SetTextColor( 0.1254, 0.6235, 0.9764, 1 )
+          this:SetTextColor( 0.1254, 0.6235, 0.9764, 1 )
         else
-          self:SetTextColor( 1, .3, .3, 1 )
+          this:SetTextColor( 1, .3, .3, 1 )
         end
       end )
     end
@@ -455,14 +454,14 @@ function M.create_config( parent, caption, setting, widget, tooltip, ufunc, opti
         frame.caption:SetTextColor( 1, 1, 1, 1 )
       end
 
-      frame.input:SetScript( "OnClick", function( self )
-        if self:GetChecked() then
+      frame.input:SetScript( "OnClick", function()
+        if this:GetChecked() then
           config_db[ setting ] = true
         else
           config_db[ setting ] = false
         end
 
-        if ufunc then ufunc( self:GetChecked(), self ) end
+        if ufunc then ufunc( this:GetChecked() ) end
       end )
 
       if config_db[ setting ] == true then frame.input:SetChecked() end
@@ -489,24 +488,24 @@ function M.create_config( parent, caption, setting, widget, tooltip, ufunc, opti
     local w = frame.button:GetTextWidth() + 10
     frame.button:SetWidth( w )
     frame.button:SetHeight( 20 )
-    frame.button:SetPoint( "TOPLEFT", (parent:GetParent():GetWidth() / 2 - w / 2 - 10), -5 )
+    frame.button:SetPoint( "TOPLEFT", (this:GetParent():GetWidth() / 2 - w / 2 - 10), -5 )
     local btnText = frame.button:GetFontString()
     if btnText then
       btnText:SetTextColor( 1, 1, 1, 1 )
     end
     frame.button:SetScript( "OnClick", ufunc )
-    frame.button:SetScript( "OnEnter", function( self )
-      self:SetBackdropBorderColor( 0.1254, 0.6235, 0.9764, 1 )
-      if self:GetParent():GetParent():GetParent():GetParent():GetParent():GetParent().show_help then
-        if self:GetParent().tooltip then
-          m.api.GameTooltip:SetOwner( self, "ANCHOR_TOPLEFT" )
-          m.api.GameTooltip:SetText( self:GetParent().tooltip )
+    frame.button:SetScript( "OnEnter", function()
+      this:SetBackdropBorderColor( 0.1254, 0.6235, 0.9764, 1 )
+      if this:GetParent():GetParent():GetParent():GetParent():GetParent():GetParent().show_help then
+        if this:GetParent().tooltip then
+          m.api.GameTooltip:SetOwner( this, "ANCHOR_TOPLEFT" )
+          m.api.GameTooltip:SetText( this:GetParent().tooltip )
           m.api.GameTooltip:Show()
         end
       end
     end )
-    frame.button:SetScript( "OnLeave", function( self )
-      self:SetBackdropBorderColor( .2, .2, .2, 1 )
+    frame.button:SetScript( "OnLeave", function()
+      this:SetBackdropBorderColor( .2, .2, .2, 1 )
       if m.api.GameTooltip:IsShown() then
         m.api.GameTooltip:Hide()
       end

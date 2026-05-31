@@ -513,11 +513,11 @@ function M.dropdown( anchor_frame, button, items_data, on_select )
 
     if item_data.type == "checkbox" then
       item = m.GuiElements.checkbox( dropdown, item_data.text, function( is_checked )
-        if item.on_select then
-          item.on_select( item.value, is_checked )
+        if this.on_select then
+          this.on_select( this.value, is_checked )
         end
         if on_select then
-          on_select( item.value, is_checked )
+          on_select( this.value, is_checked )
         end
       end )
       item.value = item_data.value
@@ -539,7 +539,7 @@ function M.dropdown( anchor_frame, button, items_data, on_select )
       item:SetScript( "OnClick", function()
         dropdown:Hide()
         if on_select then
-          on_select( item.value, item.label:GetText() )
+          on_select( this.value, this.label:GetText() )
         end
       end )
     end
@@ -562,8 +562,8 @@ function M.dropdown( anchor_frame, button, items_data, on_select )
   dropdown:SetHeight( height + 5 )
 
   if (anchor_frame and button) then
-    anchor_frame:SetScript( "OnMouseUp", function( self, mouse_button )
-      if mouse_button == button then
+    anchor_frame:SetScript( "OnMouseUp", function()
+      if arg1 == button then
         if dropdown:IsVisible() then
           dropdown:Hide()
         else

@@ -36,6 +36,7 @@ function M.new( loot_list, config, boss_list, player_info )
 
     m_item_count = m_item_count - 1
     if m_item_count > 0 then return end
+    if not m_item_count or m_item_count > 0 then return end
 
     local zone_name = m.api.GetRealZoneText()
     if m.table_contains_value( ignore_zones, zone_name ) then return end

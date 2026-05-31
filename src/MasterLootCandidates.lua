@@ -50,7 +50,8 @@ function M.new( api, group_roster, loot_list )
     local players = group_roster.get_all_players_in_my_group()
 
     for i = 1, 40 do
-      if m.vanilla then
+      -- Group legacy 1-argument APIs together (Vanilla and 3.3.5 WotLK)
+      if m.vanilla or m.wotlk then
         ---@diagnostic disable-next-line: missing-parameter
         local name = api.GetMasterLootCandidate( i )
 
@@ -60,7 +61,7 @@ function M.new( api, group_roster, loot_list )
           end
         end
       else
-        -- WotLK 3.3.5a, BCC, Retail: two-argument form (slot, index)
+        -- Modern clients (BCC, Retail, WotLK Classic) require the slot
         local name = api.GetMasterLootCandidate( slot, i )
 
         for _, p in ipairs( players ) do
@@ -96,12 +97,13 @@ function M.new( api, group_roster, loot_list )
 
     local function get_index( slot, player_name )
     for i = 1, 40 do
-      if m.vanilla then
+      -- Group legacy 1-argument APIs together (Vanilla and 3.3.5 WotLK)
+      if m.vanilla or m.wotlk then
         ---@diagnostic disable-next-line: missing-parameter
         local name = api.GetMasterLootCandidate( i )
         if name == player_name then return i end
       else
-        -- WotLK 3.3.5a, BCC, Retail: two-argument form (slot, index)
+        -- Modern clients (BCC, Retail, WotLK Classic) require the slot
         local name = api.GetMasterLootCandidate( slot, i )
         if name == player_name then return i end
       end

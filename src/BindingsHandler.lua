@@ -27,13 +27,10 @@ function M.new( main )
   end
 
   local function import( data )
-    -- Some old JSON libraries cannot handle math.huge; temporarily substitute.
-    local old_huge = math.huge
     math.huge = 1e99
     ---@diagnostic disable-next-line: undefined-global
     local json = LibStub( "Json-0.1.2" )
     local success, json_data = pcall( function() return json.encode( data ) end )
-    math.huge = old_huge
 
     if success then
       local softres_data = m.encode_base64( json_data )
