@@ -182,6 +182,12 @@ function M.new(
     local rollers = ms_roll and mainspec_rollers or os_roll and offspec_rollers or tmog_rollers
     local player = find_player( roller.name, rollers ) ---@type RollingPlayer
 
+    if not player then
+      -- Player not in the eligible rollers list (joined mid-roll, name mismatch, etc.)
+      controller.roll_was_ignored( roller.name, nil, roll_type, roll, "Not in eligible rollers list." )
+      return
+    end
+
     if player.rolls == 0 then
       chat.info( m.msg.rolls_exhausted( player.name, player.class, roll ) )
       controller.roll_was_ignored( roller.name, player.class, roll_type, roll, "Rolled too many times." )

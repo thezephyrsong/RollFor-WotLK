@@ -256,7 +256,11 @@ function M.new( popup_builder, frame_builder, db, awarded_loot, roll_controller,
 
       winners_data = filter( winners_data, function( item )
         local quality = item.quality or 0
-        return m.table_contains_value( quality_filter, quality ) and m.table_contains_value( rolltype_filter, item.roll_type )
+        local roll_type = item.roll_type or "NA"
+        -- If the roll_type key is absent from the filter table entirely, show it by default
+        local roll_type_visible = m.table_contains_value( rolltype_filter, roll_type )
+            or award_filters.roll_type[ roll_type ] == nil
+        return m.table_contains_value( quality_filter, quality ) and roll_type_visible
       end )
     end
 
