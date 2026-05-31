@@ -147,7 +147,11 @@ function M.new( roll_controller, softres, config )
     broadcast( "AWARDED", {
       pn = data.player_name,
       pc = data.player_class,
-      id = data.item_id
+      id = data.item_id,
+      il = data.item_link,
+      rt = data.roll_type,
+      wr = data.winning_roll,
+      rs = data.rolling_strategy
     } )
   end
 

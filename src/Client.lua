@@ -19,7 +19,8 @@ local getn = m.getn
 ---@param player_info PlayerInfo
 ---@param rolling_popup RollingPopup
 ---@param config Config
-function M.new( ace_timer, player_info, rolling_popup, config )
+---@param awarded_loot AwardedLoot
+function M.new( ace_timer, player_info, rolling_popup, config, awarded_loot )
   local roll_tracker ---@type RollTracker
   local roll_threshold = {}
   local show_rolling = false
@@ -47,7 +48,10 @@ function M.new( ace_timer, player_info, rolling_popup, config )
     ro = "rolls",
     p = "players",
     cl = "classes",
-    tm = "tmog"
+    tm = "tmog",
+      il = "item_link",
+      wr = "winning_roll",
+      rs = "rolling_strategy"
   }
   setmetatable( var_names, { __index = function( _, key ) return key end } );
 
@@ -373,6 +377,25 @@ function M.new( ace_timer, player_info, rolling_popup, config )
         if data.player_name == player_info.get_name() then
           m.api.PlaySound( "RaidWarning" )
           m.api.PlaySound( "PVPTHROUGHQUEUE" )
+        end
+
+        -- Record the award in the winners list for all non-ML raid members
+        if awarded_loot and data.item_id and data.player_name then
+          local already_recorded = awarded_loot.has_item_been_awarded( data.player_name, data.item_id )
+          if not already_recorded then
+            local roll_data = nil
+            if data.roll_type or data.winning_roll then
+              roll_data = { roll_type = data.roll_type, roll = data.winning_roll }
+            end
+            awarded_loot.award(
+              data.player_name,
+              data.item_id,
+              roll_data,
+              data.rolling_strategy,
+              data.item_link,
+              data.player_class
+            )
+          end
         end
 
         if config.client_auto_hide_popup() then
