@@ -191,7 +191,7 @@ local function create_components()
   M.master_loot = m.MasterLoot.new( M.master_loot_candidates, M.loot_award_callback, M.loot_list, M.roll_controller )
   M.auto_loot = m.AutoLoot.new( M.loot_list, M.api, db( "auto_loot" ), M.config, M.player_info )
   M.dropped_loot_announce = m.DroppedLootAnnounce.new( M.loot_list, M.chat, M.dropped_loot, M.softres, M.winner_tracker, M.player_info, M.auto_loot, M.config )
-  M.winners_popup = m.WinnersPopup.new( popup_builder(), m.FrameBuilder, db( "winners_popup" ), M.awarded_loot, M.roll_controller, M.confirm_popup, M.config )
+  M.winners_popup = m.WinnersPopup.new( popup_builder(), m.FrameBuilder, db( "winners_popup" ), M.awarded_loot, M.roll_controller, M.confirm_popup, M.config, M.ace_timer )
   M.options_popup = m.OptionsPopup.new( popup_builder(), M.awarded_loot, M.version_broadcast, M.config_event_bus, M.confirm_popup, M.group_roster, db( "options_popup" ), db( "config" ), M.config )
 
   M.softres_gui = m.SoftResGui.new( M.api, M.import_encoded_softres_data, M.softres_check, M.softres, clear_data, M.dropped_loot_announce.reset, M.ace_timer, M.group_roster, M.unfiltered_softres )
