@@ -120,6 +120,7 @@ local function create_components()
   M.tooltip_reader = m.TooltipReader.new( M.api() )
   M.version_broadcast = m.VersionBroadcast.new( db( "version_broadcast" ), M.player_info, version.str )
   M.awarded_loot = m.AwardedLoot.new( db( "awarded_loot" ), M.group_roster, M.config )
+  M.group_loot_tracker = m.GroupLootTracker.new( M.awarded_loot )
 
   M.softres_db = db( "softres" )
   M.unfiltered_softres = m.SoftRes.new( M.softres_db )

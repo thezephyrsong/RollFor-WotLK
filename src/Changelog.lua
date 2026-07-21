@@ -9,6 +9,7 @@ if m.Changelog then return end
 local M = {}
 
 M.entries = {
+  { ver = "1.2.3", text = "Track winners of Blizzard's built-in group-loot Need/Greed/Disenchant rolls into the same award history as SR/MS/OS." },
   { ver = "1.2.2", text = "Bug fix and seperate changelog" },
   { ver = "1.2.1", text = "Aggregate per-player +1s & multiline rows" },
   { ver = "1.2.0", text = "Add +1s GUI and improve award handling" },

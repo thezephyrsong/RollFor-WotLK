@@ -42,12 +42,14 @@ end
 ---| "OffSpec"
 ---| "Transmog"
 ---| "SoftRes"
+---| "GroupLoot"
 
 ---@class RT
 ---@field MainSpec "MainSpec"
 ---@field OffSpec "OffSpec"
 ---@field Transmog "Transmog"
 ---@field SoftRes "SoftRes"
+---@field GroupLoot "GroupLoot"
 
 ---@type RT
 M.RollType = {
@@ -55,7 +57,11 @@ M.RollType = {
   OffSpec = "OffSpec",
   TieRoll = "TieRoll",
   Transmog = "Transmog",
-  SoftRes = "SoftRes"
+  SoftRes = "SoftRes",
+  -- A win from Blizzard's built-in group-loot Need/Greed/Disenchant popup.
+  -- We can't reliably tell Need from Greed from Disenchant from the "wins:"
+  -- chat message alone, so these are all recorded under one type.
+  GroupLoot = "GroupLoot"
 }
 
 --- @alias RollingStrategyType

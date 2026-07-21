@@ -51,6 +51,8 @@ function M.handle_events( main )
       main.on_chat_msg_system( arg1, arg2, arg3, arg4, arg5 )
     elseif event == "CHAT_MSG_ADDON" then
       main.on_chat_msg_addon( arg1, arg2, arg3, arg4 )
+    elseif event == "CHAT_MSG_LOOT" then
+      main.group_loot_tracker.on_chat_msg_loot( arg1 )
     elseif event == "TRADE_SHOW" then
       main.trade_tracker.on_trade_show()
     elseif event == "TRADE_PLAYER_ITEM_CHANGED" then
@@ -93,6 +95,7 @@ function M.handle_events( main )
   -- Group roster changes are handled via GROUP_ROSTER_UPDATE registered below.
   frame:RegisterEvent( "CHAT_MSG_SYSTEM" )
   frame:RegisterEvent( "CHAT_MSG_ADDON" )
+  frame:RegisterEvent( "CHAT_MSG_LOOT" )
   frame:RegisterEvent( "CHAT_MSG_PARTY" )
   frame:RegisterEvent( "CHAT_MSG_RAID" )
   frame:RegisterEvent( "CHAT_MSG_RAID_LEADER" )
