@@ -188,16 +188,7 @@ local function create_import_frame( api, on_import, on_clear, on_cancel, on_dirt
   label:SetPoint( "BOTTOMLEFT", frame, "BOTTOMLEFT", 20, 22 )
   label:SetTextColor( 1, 1, 1, 1 )
 
-  local realm = GetRealmName()
-  local sr_website
-  if realm == "Kezan" or realm == "Gurubashi" then
-    sr_website = "softres.epoglogs.com"
-  elseif m.vanilla then
-    sr_website = "raidres.fly.dev"
-  else
-    sr_website = "    softres.it"
-  end
-
+  local sr_website = m.get_sr_website()
   label:SetText( string.format( "%s      %s %s", m.colors.blue( "RollFor" ), hl( sr_website ), "data import" ) )
 
   ---@diagnostic disable-next-line: undefined-global

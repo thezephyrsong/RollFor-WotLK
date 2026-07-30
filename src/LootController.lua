@@ -246,16 +246,27 @@ function M.new( player_info, loot_facade, loot_list, loot_frame, roll_controller
       return
     end
 
+          if is_coin or selected then return end
+
+          local master_loot = m.is_master_loot()
+
+          if not master_loot then
+            -- RollFor's loot window replaces Blizzard's own at all times, even
+            -- when the group isn't using Master Loot. In that case there's no
+            -- addon-side award to make; just loot the slot directly and let
+            -- Blizzard's own Need/Greed/DE popup (or free-for-all pickup)
+            -- handle it, same as we already do for coins/trash above.
+            local slot = loot_list.get_slot( item.id )
+            if slot then loot_facade.loot_slot( slot ) end
+            return
+          end
+
           if rolling_logic.is_rolling() then
             chat.info( "Cannot select item while rolling is in progress.", m.colors.red )
             return
           end
 
-          local master_loot = m.is_master_loot()
-
-          if is_coin or selected or not master_loot then return end
-
-          if master_loot and not player_info.is_master_looter() then
+          if not player_info.is_master_looter() then
             chat.info( "You are not the master looter.", m.colors.red )
             return
           end

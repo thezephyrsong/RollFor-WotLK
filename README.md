@@ -168,9 +168,9 @@ instead of `/rf`. "arf" stands for "All Roll For".
 
 ## Soft-Res setup
 
-1. Create a Soft Res list at https://softres.epoglogs.com/ or https://softres.it
+1. Create a Soft Res list at https://softresio-trium.onrender.com/ / https://softres.it / https://sr.bisbeard.com / https://softres.epoglogs.com
 2. Ask raiders to add their items.
-3. When ready, lock the raid and click on **RollFor export** (softres.epoglogs.com) or **Gargul Export** (softres.it) button.
+3. When ready, lock the raid and click on **RollFor export** or **Gargul Export**  button.
 
 <img src="https://github.com/thezephyrsong/RollFor-WotLK/blob/main/SoftRes/softreslocked.png" alt="SoftRes export" style="width:720px;height:350">  
 <img src="https://github.com/sica42/roll-for-vanilla/blob/master/docs/raidres-export.jpg" alt="Raidres export" style="width:720px;height:350">
@@ -212,7 +212,7 @@ The SR data from *Raidres* is a **Base64** encoded **JSON**. Decode it to see wh
 ### Fixing mistyped player names in SR setup
 
 When using soft-res, the players sometimes mistype their nickname, e.g. 
-`Johnny` in game will be `Jonnhy` in the raidres.fly.dev website.  
+`Johnny` in game will be `Jonnhy` in the raidres.top website.  
 The addon is smart enough to fix simple typos like that for you.  
 It will also deal with special characters in player names.  
 However, sometimes there's so many typos and the addon can't match the  

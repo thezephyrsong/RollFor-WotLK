@@ -148,6 +148,22 @@ if M.api.RAID_CLASS_COLORS then
   M.api.RAID_CLASS_COLORS.DEATHKNIGHT.colorStr = "ffc41e3a"
 end
 
+function M.get_sr_website()
+  local realm = GetRealmName()
+
+  if realm == "Triumvirate" then
+    return "softresio-trium.onrender.com"
+  elseif realm == "Vol'jin" or realm == "Rexxar" or realm == "Darkmoon" or realm == "Dawnrise" or realm == "Bronzebeard" or realm == "Area 52" then
+    return "sr.bisbeard.com"
+  elseif realm == "Kezan" or realm == "Gurubashi" then
+    return "softres.epoglogs.com"
+  elseif m.vanilla then
+    return "raidres.top/res"
+  else
+    return "softres.it/raid"
+  end
+end
+
 function M.print( message )
   if not message then return end
   M.api.DEFAULT_CHAT_FRAME:AddMessage( message )
