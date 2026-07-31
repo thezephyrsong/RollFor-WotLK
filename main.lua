@@ -389,7 +389,8 @@ local function on_check_softres_command( args )
     local result, players = M.softres_check.check_softres( true )
 
     if result == M.softres_check.ResultType.SomeoneIsNotSoftRessing and m.raid_id then
-      local msg = string.format( "https://%s/%s", m.get_sr_website(), m.raid_id )
+	local host, path = m.get_sr_website()
+	local msg = string.format( "https://%s/%s%s", host, path ~= "" and (path .. "/") or "", m.raid_id )
       if getn( players ) < 10 then
         msg = msg .. " - "
         for i = 1, getn( players ) do

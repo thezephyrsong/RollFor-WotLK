@@ -43,34 +43,24 @@ function M.new( popup_builder, content_transformer, db, config )
 
   local top_padding = config.classic_look() and 14 or 8
   local on_hide ---@type fun()?
+  local esc_closable = false
+  local suppress_reshow = false
+  local registered_for_esc = false
 
   ---@param frame_name string?
   ---@param close_button_callback fun()?
   local function toggle_esc( frame_name, close_button_callback )
     if not frame_name then return end
 
-    ---@diagnostic disable-next-line: undefined-global
-    local f = UISpecialFrames
-
-    local function disable_esc()
-      ---@diagnostic disable-next-line: undefined-global
-      for i, v in ipairs( f ) do
-        if v == frame_name then table.remove( f, i ) end
-      end
-    end
-
-    local function enable_esc()
-      disable_esc()
-      table.insert( f, frame_name )
-    end
-
-    if close_button_callback then
-      on_hide = close_button_callback
-      enable_esc()
-    else
-      on_hide = nil
-      disable_esc()
-    end
+    -- We no longer touch UISpecialFrames here. That's a shared global that
+    -- Blizzard's protected ESC-key "close all windows" handler also reads,
+    -- and mutating it (table.insert/remove) at runtime -- especially in
+    -- combat -- can taint that handler and cause it to block unrelated
+    -- secure calls (e.g. hiding other addons'/Blizzard's panels). The frame
+    -- is registered exactly once, in create_popup(); here we just track
+    -- whether ESC is currently *allowed* to close it.
+    on_hide = close_button_callback
+    esc_closable = close_button_callback ~= nil
   end
 
   local function create_popup()
@@ -118,8 +108,23 @@ function M.new( popup_builder, content_transformer, db, config )
         :movable()
         :on_drag_stop( on_drag_stop )
         :on_hide( function()
-          if on_hide then
-            on_hide()
+          if suppress_reshow then
+            suppress_reshow = false
+            return
+          end
+
+          if esc_closable then
+            if on_hide then
+              on_hide()
+            end
+            return
+          end
+
+          -- Something hid the frame while it wasn't meant to be ESC-closable
+          -- (e.g. a stray ESC press). Reject it by re-showing immediately,
+          -- rather than ever mutating UISpecialFrames at runtime.
+          if popup then
+            popup:Show()
           end
         end )
 
@@ -128,6 +133,12 @@ function M.new( popup_builder, content_transformer, db, config )
     end
 
     local result = builder:build()
+
+    if not registered_for_esc then
+      registered_for_esc = true
+      ---@diagnostic disable-next-line: undefined-global
+      table.insert( UISpecialFrames, result:GetName() )
+    end
 
     if config.rolling_popup_lock() then
       result:lock()
@@ -273,6 +284,7 @@ function M.new( popup_builder, content_transformer, db, config )
 
     if popup then
       on_hide = nil
+      suppress_reshow = true
       popup:Hide()
     end
   end
