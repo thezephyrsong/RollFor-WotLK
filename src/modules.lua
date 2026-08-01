@@ -618,6 +618,11 @@ function M.roll_type_abbrev( roll_type )
   end
 end
 
+-- Chat announcements (RollResultAnnouncer.lua) use the same plain-text
+-- abbreviation as the GUI; kept as a separate name in case chat output
+-- ever needs to diverge from the popup/GUI text.
+M.roll_type_abbrev_chat = M.roll_type_abbrev
+
 function M.possesive_case( player_name )
   local last_letter = string.sub( player_name, -1 )
   return last_letter == "s" and "'" or "'s"
