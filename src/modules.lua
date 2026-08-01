@@ -151,7 +151,7 @@ end
 function M.get_sr_website()
   local realm = GetRealmName()
   if realm == "Triumvirate" then
-    return "softresio-trium.onrender.com", ""
+    return "sr.bisbeard.com", ""
   elseif realm == "Vol'jin" or realm == "Rexxar" or realm == "Darkmoon" or realm == "Dawnrise" or realm == "Bronzebeard" or realm == "Area 52" then
     return "sr.bisbeard.com", ""
   elseif realm == "Kezan" or realm == "Gurubashi" then
