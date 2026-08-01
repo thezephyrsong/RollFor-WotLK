@@ -83,7 +83,17 @@ function M.new( loot_list, api, db, config, player_info )
   end
 
   local function on_auto_loot()
-    if not player_info.is_master_looter() or not config.auto_loot() then
+    if not config.auto_loot() then
+      return
+    end
+
+    local master_loot = m.is_master_loot()
+
+    -- Under Master Loot, only the actual master looter can hand out items,
+    -- same as clicking would require. Under any other loot method there's no
+    -- "master looter" permission to check -- looting a slot directly is
+    -- always something anyone with loot rights can do.
+    if master_loot and not player_info.is_master_looter() then
       return
     end
 
@@ -106,10 +116,23 @@ function M.new( loot_list, api, db, config, player_info )
 
       if item.id and slot then
         if is_auto_looted( item ) then
-          local index = find_my_candidate_index( slot )
+          if master_loot then
+            local index = find_my_candidate_index( slot )
 
-          if index then
-            api().GiveMasterLoot( slot, index )
+            if index then
+              api().GiveMasterLoot( slot, index )
+
+              if config.auto_loot_messages() then
+                info( string.format( "Auto-looting %s.", item.link ) )
+              end
+            end
+          else
+            -- Not Master Loot: just loot the slot directly. Under Group Loot
+            -- this hands it straight to us for items below the group's roll
+            -- threshold (the only case is_auto_looted() allows), same as
+            -- Blizzard's own loot window would; under Free-for-All it's
+            -- picked up outright.
+            api().LootSlot( slot )
 
             if config.auto_loot_messages() then
               info( string.format( "Auto-looting %s.", item.link ) )
@@ -209,7 +232,7 @@ function M.new( loot_list, api, db, config, player_info )
   end
 
   local function loot_item( slot )
-    local index = find_my_candidate_index()
+    local index = find_my_candidate_index( slot )
 
     if index then
       api().GiveMasterLoot( slot, index )
