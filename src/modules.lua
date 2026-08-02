@@ -156,7 +156,7 @@ function M.get_sr_website()
     return "sr.bisbeard.com", ""
   elseif realm == "Kezan" or realm == "Gurubashi" then
     return "softres.epoglogs.com", ""
-  elseif m.vanilla then
+  elseif M.vanilla then
     return "raidres.top", "res"
   else
     return "softres.it", "raid"
