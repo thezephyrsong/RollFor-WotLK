@@ -517,10 +517,18 @@ function M.dropdown_input( parent, items_data, selected, on_select )
   frame:SetWidth( 80 )
   frame:SetHeight( 18 )
 
+  local selected_text = selected
+  for _, item_data in ipairs( items_data ) do
+    if item_data.value == selected then
+      selected_text = item_data.text
+      break
+    end
+  end
+
   frame.label = frame:CreateFontString( nil, "ARTWORK", "GameFontNormal" )
   frame.label:SetTextColor( 0.1254, 0.6235, 0.9764, 1 )
   frame.label:SetJustifyH( "RIGHT" )
-  frame.label:SetText( selected )
+  frame.label:SetText( selected_text )
   frame.label:SetPoint( "RIGHT", -18, 0 )
 
   frame.button = m.api.CreateFrame( "Frame", nil, frame )

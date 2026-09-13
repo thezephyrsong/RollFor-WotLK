@@ -104,7 +104,7 @@ function M.new( popup_builder, frame_builder, db, awarded_loot, roll_controller,
         :width( db.width or 290 )
         :height( db.height or 200 )
         :point( get_point() )
-        :bg_file( "Interface/Buttons/WHITE8x8" )
+        :bg_file( not m.dragonui and "Interface/Buttons/WHITE8x8" or nil )
         :sound()
         :movable()
         :on_drag_stop( on_drag_stop )
@@ -113,7 +113,8 @@ function M.new( popup_builder, frame_builder, db, awarded_loot, roll_controller,
         :build()
 
     if not m.classic then
-      frame:backdrop_color( 0, 0, 0, .8 )
+      local t = m.dragonui and 1 or 0
+      frame:backdrop_color( t, t, t, .8 ) -- black would multiply the DragonUI rock texture's RGB to zero and erase it; white preserves it while black still gives Modern its flat look
       frame:border_color( .2, .2, .2, 1 )
     end
 
@@ -226,7 +227,7 @@ function M.new( popup_builder, frame_builder, db, awarded_loot, roll_controller,
         :width( 250 )
         :height( 100 )
         :point( { point = "TOPLEFT", relative_point = "TOPLEFT", relative_frame = "RollForWinnersFrame", x = padding_side, y = padding_top - 35 } )
-        :bg_file( "Interface/Buttons/WHITE8x8" )
+        :bg_file( not m.dragonui and "Interface/Buttons/WHITE8x8" or nil )
         :gui_elements( m.WinnersPopupGui )
         :border_size( .5 )
         :border_color( .2, .2, .2, 1 )

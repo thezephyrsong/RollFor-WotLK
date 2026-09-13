@@ -1,7 +1,7 @@
 ## Interface: 30300
 ## Title: RollFor
 ## Author: Zae
-## Version: 1.2.6
+## Version: 1.2.7
 ## Notes: An automated item roller with soft ressing support via SoftRes (raidres.top/softres.it/bisbeard.com).
 ## SavedVariables: RollForDb
 ## SavedVariablesPerCharacter: RollForCharDb
@@ -101,6 +101,8 @@ src\UiReloadPopup.lua
 src\Sandbox.lua
 src\ModernLootFrameSkin.lua
 src\OgLootFrameSkin.lua
+src\DragonUiLootFrameSkin.lua
+src\SkinSelectionPopup.lua
 src\Client.lua
 src\ClientBroadcast.lua
 

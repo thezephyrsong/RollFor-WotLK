@@ -536,17 +536,23 @@ function M.dropdown( anchor_frame, button, items_data, on_select )
       item:SetWidth( item.label:GetWidth() )
       item.value = item_data.value
 
-      item:SetScript( "OnClick", function()
-        dropdown:Hide()
-        if on_select then
-          on_select( this.value, this.label:GetText() )
-        end
-      end )
+      if item_data.disabled then
+        item.label:SetTextColor( 0.4, 0.4, 0.4, 1 )
+      else
+        item:SetScript( "OnClick", function()
+          dropdown:Hide()
+          if on_select then
+            on_select( this.value, this.label:GetText() )
+          end
+        end )
+      end
     end
 
+    if not item_data.disabled then
+      item:SetScript( "OnEnter", function() blue_hover( .2 ) end )
+      item:SetScript( "OnLeave", function() blue_hover( 0 ) end )
+    end
     blue_hover( 0 )
-    item:SetScript( "OnEnter", function() blue_hover( .2 ) end )
-    item:SetScript( "OnLeave", function() blue_hover( 0 ) end )
     item:SetPoint( "TOPLEFT", 5, -height )
     item:SetPoint( "RIGHT", -5, 0 )
 

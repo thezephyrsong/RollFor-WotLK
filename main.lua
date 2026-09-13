@@ -95,10 +95,16 @@ local function create_components()
   ---@type Config
   M.config = m.Config.new( db( "config" ), M.config_event_bus )
 
-  local classic = M.config.classic_look()
+  local skin = M.config.skin() or "modern"
+  local classic = skin == "classic"
   local popup_bottom_margin, popup_bottom_button_margin = classic and 37 or 24, classic and 14 or 7
   local popup_side_margin = classic and 50 or 35
-  local popup_builder_factory = classic and m.PopupBuilder.classic or m.PopupBuilder.modern
+  local popup_builder_factories = {
+    classic = m.PopupBuilder.classic,
+    modern = m.PopupBuilder.modern,
+    dragonui = m.PopupBuilder.dragonui,
+  }
+  local popup_builder_factory = popup_builder_factories[ skin ] or m.PopupBuilder.modern
 
   local function popup_builder( bottom_margin, side_margin )
     return popup_builder_factory( m.FrameBuilder, bottom_margin or popup_bottom_margin, popup_bottom_button_margin, side_margin or popup_side_margin )
@@ -106,6 +112,7 @@ local function create_components()
 
   M.ui_reload_popup = m.UiReloadPopup.new( popup_builder( classic and 37 or 27 ), M.config )
   M.confirm_popup = m.ConfirmPopup.new( popup_builder( classic and 37 or 27 ), M.config )
+  M.skin_selection_popup = m.SkinSelectionPopup.new( m.FrameBuilder, M.config )
 
   M.api = function() return m.api end
   M.player_info = m.PlayerInfo.new( M.api() )
@@ -154,8 +161,15 @@ local function create_components()
     M.config
   )
 
+  local loot_frame_skins = {
+    classic = m.OgLootFrameSkin,
+    modern = m.ModernLootFrameSkin,
+    dragonui = m.DragonUiLootFrameSkin,
+  }
+  local loot_frame_skin = (loot_frame_skins[ skin ] or m.ModernLootFrameSkin).new( m.FrameBuilder )
+
   M.loot_frame = m.LootFrame.new(
-    M.config.classic_look() and m.OgLootFrameSkin.new( m.FrameBuilder ) or m.ModernLootFrameSkin.new( m.FrameBuilder ),
+    loot_frame_skin,
     db( "loot_frame" ),
     M.config
   )
@@ -222,7 +236,7 @@ local function create_components()
 
   M.client_broadcast = m.ClientBroadcast.new( M.roll_controller, M.softres, M.config )
   M.client = m.Client.new( M.ace_timer, M.player_info, M.rolling_popup, M.config, M.awarded_loot )
-  M.sandbox = m.Sandbox.new()
+  M.sandbox = m.Sandbox.new( M.loot_frame )
 end
 
 local function subscribe_for_component_events()
@@ -553,7 +567,11 @@ function M.on_player_login()
   M.import_encoded_softres_data( M.softres_db.data )
   M.softres_gui.load( M.softres_db.data )
 
-  if M.welcome_popup.should_show() then M.welcome_popup.show() end
+  if M.skin_selection_popup.should_show() then
+    M.skin_selection_popup.show()
+  elseif M.welcome_popup.should_show() then
+    M.welcome_popup.show()
+  end
   LootFrame:UnregisterAllEvents()
 end
 

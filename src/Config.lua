@@ -40,7 +40,6 @@ function M.new( db, event_bus )
     [ "show_open_roll_button" ] = { cmd = "show-open-roll-button", display = string.format( "%s button", hl( "Open Roll" ) ), help = string.format( "toggle %s button in rolling popup", hl( "Open Roll" ) ) },
     [ "show_player_roles"] = { cmd = "show-player-roles", display = "Show player roles", help="toggle player roles showing in rolling popup" },
     [ "loot_frame_cursor" ] = { cmd = "loot-frame-cursor", display = "Display loot frame at cursor position", help = "toggle displaying loot frame at cursor position" },
-    [ "classic_look" ] = { cmd = "classic-look", display = "Classic look", help = "toggle classic look", requires_reload = true },
     [ "client_auto_hide_popup" ] = { cmd = "auto-hide", display = "Hide popup when rolling is complete", help = "toggle hiding of roll popup", client = true },
     [ "client_auto_roll_sr" ] = { cmd = "auto-roll-sr", display = "Auto roll on SR items", help = "automatically roll on SR items", client = true },
     [ "enable_quick_award_shift" ] = { cmd = "enable-quick-award-shift", display = "Enable Shift-click on award other button", help = "Enable Shift-click on award other button award to self" },
@@ -90,7 +89,15 @@ function M.new( db, event_bus )
     if db.award_filter and db.award_filter.roll_type and db.award_filter.roll_type.NA == nil then
       db.award_filter.roll_type.NA = 1
     end
-    m.classic = db.classic_look
+
+    -- Migration: db.classic_look (boolean) -> db.skin ( "classic" | "modern" | "dragonui" )
+    if db.skin == nil then
+      db.skin = db.classic_look and "classic" or "modern"
+    end
+    db.classic_look = (db.skin == "classic") -- kept in sync for anything still reading the old flag directly
+
+    m.classic = db.skin == "classic"
+    m.dragonui = db.skin == "dragonui"
   end
 
   local function print( toggle_key )
@@ -286,6 +293,44 @@ function M.new( db, event_bus )
     info( string.format( "Usage: %s <threshold>", hl( "/rf config tmog" ) ) )
   end
 
+  local valid_skins = { classic = true, modern = true, dragonui = true }
+
+  local function print_skin()
+    info( string.format( "Skin: %s", hl( db.skin ) ) )
+  end
+
+  ---@param skin "classic"|"modern"|"dragonui"
+  local function set_skin( skin )
+    if not valid_skins[ skin ] then return end
+
+    db.skin = skin
+    db.classic_look = (skin == "classic")
+    db.skin_chosen_by_user = true
+    m.classic = (skin == "classic")
+    m.dragonui = (skin == "dragonui")
+
+    print_skin()
+    notify_subscribers( "skin", skin )
+    event_bus.notify( "config_change_requires_ui_reload", { key = "skin" } )
+  end
+
+  local function configure_skin( args )
+    if args == "config skin" then
+      print_skin()
+      return
+    end
+
+    for value in string.gmatch( args, "config skin (%a+)" ) do
+      if valid_skins[ string.lower( value ) ] then
+        set_skin( string.lower( value ) )
+        return
+      end
+    end
+
+    print_skin()
+    info( string.format( "Usage: %s <classic|modern|dragonui>", hl( "/rf config skin" ) ) )
+  end
+
   local function configure_client_roll( args )
     for value in string.gmatch( args, "config client show%-roll (%a+)" ) do
       if ({ off = true, always = true, eligible = true })[ string.lower( value ) ] then
@@ -314,6 +359,8 @@ function M.new( db, event_bus )
     m.print( string.format( "%s %s - set MS rolling threshold ", rfc( "ms" ), v( "threshold" ) ) )
     m.print( string.format( "%s - show OS rolling threshold ", rfc( "os" ) ) )
     m.print( string.format( "%s %s - set OS rolling threshold ", rfc( "os" ), v( "threshold" ) ) )
+    m.print( string.format( "%s - show current skin ", rfc( "skin" ) ) )
+    m.print( string.format( "%s %s - set skin. Requires /reload", rfc( "skin" ), v( "classic|modern|dragonui" ) ) )
 
     if m.vanilla then  -- TMOG rolling is Vanilla-only; not available on BCC or WotLK
       m.print( string.format( "%s - toggle TMOG rolling", rfc( "tmog" ) ) )
@@ -434,6 +481,11 @@ function M.new( db, event_bus )
       return
     end
 
+    if string.find( args, "^config skin" ) then
+      configure_skin( args )
+      return
+    end
+
     if string.find( args, "^config default%-rolling%-time" ) then
       configure_default_rolling_time( args )
       return
@@ -494,6 +546,11 @@ function M.new( db, event_bus )
     configure_ms_threshold = configure_ms_threshold,
     configure_os_threshold = configure_os_threshold,
     configure_tmog_threshold = configure_tmog_threshold,
+    configure_skin = configure_skin,
+    skin = get( "skin" ),
+    set_skin = set_skin,
+    skin_chosen_by_user = function() return db.skin_chosen_by_user or false end,
+    classic_look = function() return db.skin == "classic" end,
     hide_minimap_button = hide_minimap_button,
     lock_minimap_button = lock_minimap_button,
     minimap_button_hidden = get( "minimap_button_hidden" ),

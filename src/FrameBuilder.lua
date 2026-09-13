@@ -7,6 +7,10 @@ local M = {}
 
 local getn = m.getn
 
+-- Dedupe the "DragonUI not found" notice so it fires once per session
+-- instead of once per frame built with frame_style( "DragonUI" ).
+local warned_missing_dragonui = false
+
 M.interface = {
 }
 
@@ -14,6 +18,7 @@ M.interface = {
 ---| "Modern"
 ---| "Classic"
 ---| "None"
+---| "DragonUI"
 
 ---@class Vector2
 ---@field x number
@@ -144,6 +149,7 @@ M.interface = {
 ---@field button fun(): FrameBuilder
 ---@field modern fun(): FrameBuilder
 ---@field classic fun(): FrameBuilder
+---@field dragonui fun(): FrameBuilder
 
 ---@return FrameBuilder
 function M.new()
@@ -198,6 +204,8 @@ function M.new()
         frame:SetFrameStrata( "DIALOG" )
       end
 
+      local using_dragonui_texture = false
+
       if options.frame_style == "Modern" then
         frame:SetBackdrop( {
           bgFile = options.bg_file or "Interface/Buttons/WHITE8x8",
@@ -225,13 +233,55 @@ function M.new()
           edgeSize = options.border_size or 0,
           insets = { left = 0, right = 0, top = 0, bottom = 0 }
         } )
+      elseif options.frame_style == "DragonUI" then
+        -- DragonUI isn't required to run RollFor. If it's not installed (or its
+        -- nineslice lib isn't loaded), fall back to the plain "Modern" look
+        -- instead of leaving the frame with a missing/blank texture.
+        --
+        -- Note: DragonUI's smallest nineslice corners are 32px ("MetalFrameTemplate").
+        -- RollFor's LootFrame body can shrink to a single row (~30px) - a frame that
+        -- short makes the top/bottom corners overlap into a "pill" shape instead of a
+        -- border. Callers with a frame that can get that small should pass
+        -- :dragonui_layout( false ) to skip the corner nineslice while still getting
+        -- the DragonUI-flavored background texture below.
+        local skip_border = options.dragonui_layout_name == false
+        local layout_name = not skip_border and (options.dragonui_layout_name or "MetalFrameTemplate")
+        local dragonui_found = _G.NineSliceUtils and _G.NineSliceUtils.ApplyLayout and true or false
+        local dragonui_layout = dragonui_found and layout_name and _G.NineSliceUtils.GetLayout( layout_name )
+        using_dragonui_texture = dragonui_found and not options.bg_file
+
+        frame:SetBackdrop( {
+          bgFile = options.bg_file or (dragonui_found and "Interface\\AddOns\\DragonUI\\Textures\\UI\\ui-background-rock" or "Interface/Buttons/WHITE8x8"),
+          edgeFile = dragonui_layout and nil or "Interface\\Buttons\\WHITE8X8",
+          tile = false,
+          tileSize = 0,
+          edgeSize = dragonui_layout and 0 or (options.border_size or 0.8),
+          insets = { left = 0, right = 0, top = 0, bottom = 0 }
+        } )
+
+        if dragonui_layout then
+          _G.NineSliceUtils.ApplyLayout( frame, dragonui_layout )
+        elseif not dragonui_found and not warned_missing_dragonui then
+          warned_missing_dragonui = true
+          m.pretty_print( "DragonUI skin selected but DragonUI wasn't found - using the default look instead.", m.colors.red )
+        end
       end
 
       if options.backdrop_color then
         local c = options.backdrop_color
-        frame:SetBackdropColor( c.r, c.g, c.b, c.a or 1 )
+        if using_dragonui_texture and c.r == 0 and c.g == 0 and c.b == 0 then
+          -- SetBackdropColor multiplies the bgFile's RGB, it doesn't just set opacity.
+          -- Pure black (0,0,0) zeroes every channel and erases an actual textured
+          -- background entirely (this is exactly what makes it work as a flat overlay
+          -- on Modern/Classic's plain white swatch). A non-black tint like the header's
+          -- blue still lets the rock texture's detail show through, so only black needs
+          -- neutralizing here - let alpha alone control how much shows through instead.
+          frame:SetBackdropColor( 1, 1, 1, c.a or 1 )
+        else
+          frame:SetBackdropColor( c.r, c.g, c.b, c.a or 1 )
+        end
       else
-        frame:SetBackdropColor( 0, 0, 0, 0.7 )
+        frame:SetBackdropColor( using_dragonui_texture and 1 or 0, using_dragonui_texture and 1 or 0, using_dragonui_texture and 1 or 0, 0.7 )
       end
 
       if options.border_color then
@@ -518,6 +568,19 @@ function M.new()
     return self
   end
 
+  -- Only meaningful with frame_style( "DragonUI" ). DragonUI ships a few nineslice
+  -- layouts of very different scale - "NoPortraitFrameTemplate" has 75px ornate
+  -- corners meant for full dialog windows, which badly overshoots a slim ~24px
+  -- header bar. Pass a layout name (e.g. "MetalFrameTemplate", the thinner 32px
+  -- variant) to pick a better-fitting one, or `false` to skip the nineslice
+  -- border entirely (e.g. for the drag-handle header) and keep a plain flat bar.
+  ---@param self FrameBuilder
+  ---@param v string|false
+  local function dragonui_layout( self, v )
+    options.dragonui_layout_name = v
+    return self
+  end
+
   local function on_drag_stop( self, callback )
     options.on_drag_stop = callback
     return self
@@ -599,6 +662,7 @@ function M.new()
     esc = esc,
     gui_elements = gui_elements,
     frame_style = frame_style,
+    dragonui_layout = dragonui_layout,
     on_drag_stop = on_drag_stop,
     movable = movable,
     resizable = resizable,
@@ -629,6 +693,11 @@ function M.classic()
   return M.new()
       :frame_style( "Classic" )
       :border_size( 25 )
+end
+
+function M.dragonui()
+  return M.new()
+      :frame_style( "DragonUI" )
 end
 
 m.FrameBuilder = M

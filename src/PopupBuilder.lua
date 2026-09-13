@@ -166,5 +166,18 @@ function M.classic( frame_builder, bottom_margin, bottom_button_margin, side_mar
   return builder
 end
 
+---@param frame_builder FrameBuilderFactory
+---@param bottom_margin number?
+---@param bottom_button_margin number?
+---@param side_margin number?
+function M.dragonui( frame_builder, bottom_margin, bottom_button_margin, side_margin )
+  local builder = new( frame_builder, bottom_margin, bottom_button_margin, side_margin )
+      :frame_style( "DragonUI" )
+      :dragonui_layout( false ) -- every popup here draws its own opaque titlebar flush with the frame edge; DragonUI's corner/edge art overhangs outside that edge by design and pokes out around/behind it. Keep the rock-textured background, skip the corners.
+      :backdrop_color( 0, 0, 0, 0.6 )
+
+  return builder
+end
+
 m.PopupBuilder = M
 return M

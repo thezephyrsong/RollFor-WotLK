@@ -59,7 +59,8 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
         :name( "RollForOptionsFrame" )
         :width( 400 )
         :height( 350 )
-        :bg_file( "Interface/Buttons/WHITE8x8" )
+        :bg_file( not m.dragonui and "Interface/Buttons/WHITE8x8" or nil )
+        :dragonui_layout( "NoPortraitFrameTemplate" ) -- overrides PopupBuilder.dragonui()'s default of false. Isolated test: at 350px this popup is well over the 92px floor that made the LootFrame body work, so trying real corners here specifically before touching the other (untested, possibly shorter) popups.
         :sound()
         :movable()
         :on_drag_stop( on_drag_stop )
@@ -68,7 +69,8 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
         :build()
 
     if not m.classic then
-      frame:backdrop_color( 0, 0, 0, .85 )
+      local t = m.dragonui and 1 or 0
+      frame:backdrop_color( t, t, t, .85 ) -- black would multiply the DragonUI rock texture's RGB to zero and erase it; white preserves it while black still gives Modern its flat look
       frame:border_color( .2, .2, .2, 1 )
     end
 
@@ -166,9 +168,13 @@ function M.new( popup_builder, awarded_loot, version_broadcast, event_bus, confi
 
     e.create_gui_entry( "General", frames, function()
       e.create_config( "General settings", nil, "header" )
-      e.create_config( "Classic look", "classic_look", "checkbox", "Toggle classic look. Requires /reload", function()
-        event_bus.notify( "config_change_requires_ui_reload", { key = "classic_look" } )
-      end )
+      e.create_config( "Skin", "skin", "dropdown", "Choose RollFor's look. Requires /reload", function( value )
+        config.set_skin( value )
+      end, {
+        { text = "Classic",  value = "classic" },
+        { text = "Modern",   value = "modern" },
+        { text = "DragonUI", value = "dragonui", disabled = not (_G.NineSliceUtils and _G.NineSliceUtils.ApplyLayout) }
+      } )
       e.create_config( "Master loot warning", "show_ml_warning", "checkbox", "Show a warning if no master looter is set when targeting a boss.", notify )
       e.create_config( "Auto raid-roll", "auto_raid_roll", "checkbox", "Automatically do a raid-roll if no one rolls for an item.", notify )
       e.create_config( "Auto group loot", "auto_group_loot", "checkbox", "Automatically sets loot mode back to group loot after boss is looted.", notify )
