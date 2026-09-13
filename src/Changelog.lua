@@ -9,6 +9,7 @@ if m.Changelog then return end
 local M = {}
 
 M.entries = {
+  { ver = "1.2.7", text = "Added a DragonUI skin option (alongside Classic/Modern) for LootFrame, RollingPopup, ConfirmPopup, UiReloadPopup and LootAwardPopup. Pick it on first login or anytime via /rf config skin or the options panel. Falls back automatically if DragonUI isn't installed." },
   { ver = "1.2.6", text = "Fix capitalisation and improve Boss List to include all bosses included in stock 3.3.5a" },
   { ver = "1.2.5", text = "Fixes for issues around combat rolling" },
   { ver = "1.2.4", text = "Added Ascension/Bisbeard referral links and Bug fixes." },
